@@ -17,7 +17,7 @@ Biblesyn is a Christian spiritual-growth platform built with Next.js 14, TypeScr
 The Premium subscription is USD $1 per month. Stripe checkout creates the recurring subscription.
 
 ## Setup
-1. Create a Supabase project and run `supabase/migrations/0001_init.sql` in the SQL editor.
+1. Create a Supabase project and run the SQL files in `supabase/migrations/` in numerical order. Migration `0002` also removes demo rows if the original scaffold migration was already applied.
 2. Enable Email and Google providers in Supabase Auth. Configure the site URL and `/auth/callback` redirect URLs.
 3. Copy `.env.example` to `.env.local` and fill in the Supabase, Stripe, Anthropic and OpenAI credentials. Never expose the service-role key in browser code.
 4. Run `npm install`, then `npm run dev`.
