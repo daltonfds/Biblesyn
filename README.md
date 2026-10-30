@@ -1,31 +1,20 @@
 # Biblesyn
-**Understand the Word. Strengthen Your Spirit.**
+Understand the Word. Strengthen Your Spirit.
+Stack: Next.js 14 (App Router, TypeScript), Tailwind, Supabase (Postgres + Auth), Stripe, Anthropic (Bible Assistant), OpenAI TTS (audio). Design: white and black with a touch of green; Source Serif 4 (reading and titles) + Inter (interface); lucide icons; brand icons from react-icons.
 
-Biblesyn is a Christian spiritual-growth platform built with Next.js 14, TypeScript, Tailwind CSS, Supabase, Stripe, Anthropic and OpenAI text-to-speech.
+## Features
+Guest browsing; email/password and Google sign-in; content gated by database rules (guests read excerpts, members read free articles and day 1 of plans, Premium reads everything); Premium paywall with price by country from the `prices` table; Stripe subscription + webhook; Bible Assistant (Premium); study plans with progress and streak; spiritual journal with goals and saved articles; daily devotion with audio; article reader with Read / Listen / Read & Listen; sharing to WhatsApp, Facebook, X, Telegram, copy link and the phone's native share sheet; Open Graph cards so shared links show a preview.
 
-## Implemented application features
-- Guest browsing and Supabase email/password + Google authentication
-- Daily devotion feed backed by published database entries
-- Spiritual article library with member and Premium access rules
-- Study plans with per-user progress tracking
-- Private spiritual journal
-- Premium Bible assistant powered by Anthropic
-- Article audio generation through OpenAI TTS
-- Stripe monthly subscription checkout and webhook
-
-## Subscription
-The Premium subscription is USD $1 per month. Stripe checkout creates the recurring subscription.
+## Not built yet
+Translations of the interface and content (database already has `locale`), admin/CMS for articles, Bible text reader.
 
 ## Setup
-1. Create a Supabase project and run the SQL files in `supabase/migrations/` in numerical order. Migration `0002` also removes demo rows if the original scaffold migration was already applied.
-2. Enable Email and Google providers in Supabase Auth. Configure the site URL and `/auth/callback` redirect URLs.
-3. Copy `.env.example` to `.env.local` and fill in the Supabase, Stripe, Anthropic and OpenAI credentials. Never expose the service-role key in browser code.
-4. Run `npm install`, then `npm run dev`.
-5. Configure a Stripe webhook at `/api/stripe/webhook` for `checkout.session.completed` and `customer.subscription.deleted`.
-6. Import the repository into Vercel and configure the same environment variables for deployment.
+1. Supabase: run `supabase/migrations/0001_init.sql`, then `0002_goals.sql` (SQL editor), or use the project already created.
+2. Auth > Providers: enable Email and Google. Auth > URL Configuration: Site URL = your domain; add `https://YOUR_DOMAIN/auth/callback` and `http://localhost:3000/auth/callback` as redirect URLs.
+3. Copy `.env.example` to `.env.local` and fill it in (the service role key stays server-only).
+4. `npm install && npm run dev`.
+5. Stripe: webhook to `https://YOUR_DOMAIN/api/stripe/webhook` for `checkout.session.completed` and `customer.subscription.deleted`; copy the signing secret to `STRIPE_WEBHOOK_SECRET`. Prices are created inline from the `prices` table.
+6. Deploy: push to GitHub, import in Vercel, add the variables from `.env.example`, set `NEXT_PUBLIC_SITE_URL` to the production URL.
 
-## Editorial content
-The database migration deliberately inserts no sample articles, devotions, study plans, or test customers. Publish reviewed material by inserting records into `articles` and `article_bodies`, `study_plans` and `study_plan_days`, and `devotions`. Unpublished content stays hidden from visitors.
-
-## Not yet implemented
-A content-management dashboard, full Portuguese/French/Spanish interface translations, analytics dashboard, and a complete Bible text reader are not part of this initial codebase.
+## Content
+Add rows to `articles` + `article_bodies` (`published = true`; `is_free` for free reads). In the body, a short line without a final period becomes a section label. Add days to `study_plan_days` and a row to `devotions` per date.
