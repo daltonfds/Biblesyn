@@ -1,7 +1,7 @@
 'use client';
-import type {SVGProps} from 'react';
+import type {ReactNode, SVGProps} from 'react';
 type Name = 'home'|'book-open'|'calendar-days'|'message-circle'|'user-round'|'search'|'arrow-up-right'|'headphones'|'bookmark'|'lock'|'plus'|'send'|'chevron-left'|'check'|'trash-2'|'sparkles'|'pen-line';
-const paths: Record<Name, React.ReactNode> = {
+const paths: Record<Name, ReactNode> = {
   home:<><path d="m3 10 9-7 9 7"/><path d="M5 9v11h14V9"/><path d="M9 20v-6h6v6"/></>,
   'book-open':<><path d="M12 7v14"/><path d="M3 18V5a2 2 0 0 1 2-2h3a4 4 0 0 1 4 4 4 4 0 0 1 4-4h3a2 2 0 0 1 2 2v13"/><path d="M3 18a2 2 0 0 0 2 2h3a4 4 0 0 1 4 2 4 4 0 0 1 4-2h3a2 2 0 0 0 2-2"/></>,
   'calendar-days':<><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 10h18M8 14h.01M12 14h.01M16 14h.01M8 17h.01M12 17h.01"/></>,
