@@ -1,7 +1,10 @@
 import Link from 'next/link';
 import {supabaseServer} from '@/lib/supabase/server';
-export default async function Plans() {
-  const {data: plans} = await supabaseServer().from('study_plans').select('slug,title,description,days').eq('published', true).order('sort');
-  return (<div className="px-5 pt-14"><h1 className="px-1 font-serif text-4xl font-semibold">Study Plans</h1>
-    {plans?.length ? <div className="mt-4 space-y-2">{plans.map((plan: any) => <Link key={plan.slug} href={`/plans/${plan.slug}`} className="block rounded-2xl border border-[#E3D5B8] bg-[#FFFDF8] p-4"><div className="font-serif text-xl font-semibold">{plan.title}</div><div className="mt-1 text-xs text-[#6F5A40]">{plan.days} days</div>{plan.description && <p className="mt-2 text-sm text-[#6F5A40]">{plan.description}</p>}</Link>)}</div> : <p className="mt-4 rounded-2xl bg-parchment p-4 text-sm text-[#6F5A40]">There are no published study plans yet.</p>}</div>);
+import Icon from '@/components/Icon';
+export default async function Plans(){
+ const {data:plans}=await supabaseServer().from('study_plans').select('slug,title,description,days').eq('published',true).order('sort');
+ return <div className="px-5 pt-12">
+  <p className="text-[10px] font-semibold uppercase tracking-[.2em] text-green">A RHYTHM OF GROWTH</p><h1 className="mt-2 font-serif text-[34px] font-semibold">Study Plans</h1><p className="mt-2 text-sm leading-6 text-muted">Build a deeper understanding through guided time in Scripture.</p>
+  <div className="mt-7 space-y-3">{plans?.length?plans.map((plan:any,i:number)=><Link key={plan.slug} href={`/plans/${plan.slug}`} className="group flex items-start gap-4 rounded-[22px] border border-line p-5 transition hover:border-[#B8CBBE] hover:bg-[#FCFDFC]"><span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-greenSoft font-serif text-xl text-green">{String(i+1).padStart(2,'0')}</span><span className="min-w-0 flex-1"><span className="block font-serif text-[22px] font-semibold leading-tight">{plan.title}</span>{plan.description&&<span className="mt-2 block text-sm leading-6 text-muted">{plan.description}</span>}<span className="mt-3 block text-[11px] font-semibold text-green">{plan.days} days · Explore plan</span></span><Icon name="arrow-up-right" size={18} className="mt-1 text-muted"/></Link>):<div className="rounded-[22px] border border-dashed border-[#DADADA] px-6 py-10 text-center"><div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-greenSoft text-green"><Icon name="calendar-days"/></div><h2 className="mt-4 font-serif text-2xl font-semibold">Your next chapter starts here</h2><p className="mt-2 text-sm leading-6 text-muted">There are no published study plans yet. New guided plans will appear here after editorial review.</p></div>}</div>
+ </div>;
 }
