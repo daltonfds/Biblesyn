@@ -8,4 +8,10 @@ body{background:#fff;color:#0B0B0B}
   .card{@apply rounded-3xl border border-line bg-white}
   .label{@apply text-[11px] font-semibold uppercase tracking-[.14em] text-mute}
   .field{@apply h-12 w-full rounded-full border border-line bg-white px-5 text-[15px] outline-none focus:border-ink}
+  .ai{@apply w-full rounded-lg border border-line bg-white px-3 py-2 text-sm outline-none focus:border-ink}
+  .ab{@apply inline-flex items-center justify-center rounded-lg bg-ink px-4 py-2 text-sm font-semibold text-white disabled:opacity-60}
+  .ab-line{@apply inline-flex items-center justify-center rounded-lg border border-line bg-white px-4 py-2 text-sm font-semibold text-ink}
+  .tbl{@apply w-full text-left text-sm}
+  .tbl th{@apply border-b border-line px-3 py-2 text-[11px] font-semibold uppercase tracking-wider text-mute}
+  .tbl td{@apply border-b border-line px-3 py-2 align-top}
 }

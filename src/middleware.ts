@@ -10,10 +10,15 @@ export async function middleware(req: NextRequest) {
     }},
   });
   const {data: {user}} = await sb.auth.getUser();
-  if (!user && /^\/(journal|account)/.test(req.nextUrl.pathname)) {
+  if (!user && /^\/(journal|admin)/.test(req.nextUrl.pathname)) {
     const u = req.nextUrl.clone(); u.pathname = '/login'; u.searchParams.set('next', req.nextUrl.pathname);
     return NextResponse.redirect(u);
   }
+  const opt = {path: '/', maxAge: 31536000, sameSite: 'lax' as const};
+  const ip = req.headers.get('x-vercel-ip-country');
+  if (!req.cookies.get('country') && ip) res.cookies.set('country', ip.toUpperCase(), opt);
+  const al = req.headers.get('accept-language')?.slice(0, 2).toLowerCase();
+  if (!req.cookies.get('locale') && al) res.cookies.set('locale', al, opt);
   return res;
 }
 export const config = {matcher: ['/((?!_next/static|_next/image|favicon.ico|api/stripe/webhook).*)']};
