@@ -19,7 +19,7 @@ export async function middleware(req: NextRequest) {
     }},
   });
   const {data: {user}} = await sb.auth.getUser();
-  if (!user && /^\\/(journal|admin)/.test(req.nextUrl.pathname)) {
+  if (!user && /^\/(journal|admin)/.test(req.nextUrl.pathname)) {
     const u = req.nextUrl.clone(); u.pathname = '/login'; u.searchParams.set('next', req.nextUrl.pathname);
     return NextResponse.redirect(u);
   }
