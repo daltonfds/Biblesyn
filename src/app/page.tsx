@@ -1,33 +1,40 @@
 import Link from 'next/link';
+import {BookOpen, Headphones, Flame, Play} from 'lucide-react';
 import {supabaseServer} from '@/lib/supabase/server';
 import {getLocale} from '@/lib/locale';
-import Icon from '@/components/Icon';
-export default async function Home(){
- const sb=supabaseServer();
- const [{data:{user}},{data:devotion},{data:articles}]=await Promise.all([
-  sb.auth.getUser(),
-  sb.from('devotions').select('*').order('day',{ascending:false}).limit(1).maybeSingle(),
-  sb.from('articles').select('slug,title,topic,read_minutes').eq('published',true).eq('locale',getLocale()).order('created_at',{ascending:false}).limit(3)
- ]);
- return <div className="px-5 pt-12">
-  <header className="flex items-center justify-between pb-7">
-   <div><p className="text-[10px] font-semibold uppercase tracking-[.24em] text-green">BIBLESYN</p><h1 className="mt-2 font-serif text-[34px] font-semibold leading-none tracking-tight">Today</h1></div>
-   {user?<Link href="/journal" aria-label="Your journal" className="flex h-11 w-11 items-center justify-center rounded-full border border-line text-ink"><Icon name="user-round"/></Link>:<Link href="/login" className="rounded-full border border-ink px-5 py-2.5 text-xs font-semibold">Log in</Link>}
-  </header>
-  {devotion?<section className="rounded-[26px] bg-ink p-6 text-white">
-   <div className="flex items-center gap-2 text-[10px] font-semibold tracking-[.2em] text-[#A9C7B4]"><span className="h-1.5 w-1.5 rounded-full bg-[#6C9B7B]"/> DAILY DEVOTION</div>
-   <p className="mt-5 font-serif text-[30px] leading-[1.18]">{devotion.verse_text}</p>
-   <p className="mt-3 text-xs font-medium text-[#B8C9BE]">{devotion.verse_ref}</p>
-   {devotion.reflection&&<p className="mt-5 border-t border-white/15 pt-4 text-sm leading-7 text-white/75">{devotion.reflection}</p>}
-   {devotion.audio_url&&<audio controls className="mt-5 w-full" src={devotion.audio_url}/>}
-  </section>:<section className="rounded-[26px] border border-dashed border-[#DADADA] px-6 py-8 text-center">
-   <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-greenSoft text-green"><Icon name="book-open" size={22}/></div>
-   <h2 className="mt-4 font-serif text-2xl font-semibold">A moment in the Word</h2>
-   <p className="mx-auto mt-2 max-w-[260px] text-sm leading-6 text-muted">The next daily devotion will appear here once it has been published.</p>
-  </section>}
-  <section className="pt-9">
-   <div className="mb-4 flex items-end justify-between"><div><p className="text-[10px] font-semibold tracking-[.2em] text-green">GROW IN UNDERSTANDING</p><h2 className="mt-1 font-serif text-[27px] font-semibold">From the library</h2></div><Link href="/library" className="flex items-center gap-1 text-xs font-semibold">Explore <Icon name="arrow-up-right" size={15}/></Link></div>
-   {articles?.length?<div className="divide-y divide-line rounded-2xl border border-line">{articles.map((a:any,i:number)=><Link key={a.slug} href={`/library/${a.slug}`} className="flex items-center gap-4 p-4 transition-colors hover:bg-[#FAFAFA]"><span className="font-serif text-2xl text-[#B0B0B0]">0{i+1}</span><span className="min-w-0 flex-1"><span className="block font-serif text-xl font-semibold leading-tight">{a.title}</span><span className="mt-1 block text-[11px] text-muted">{a.read_minutes} min · {a.topic}</span></span><Icon name="arrow-up-right" size={17} className="text-muted"/></Link>)}</div>:<div className="rounded-2xl border border-line p-5"><p className="text-sm text-muted">No studies have been published in your language yet.</p></div>}
-  </section>
- </div>;
+import {getStreak, getContinuePlan} from '@/lib/progress';
+import Greeting from '@/components/Greeting';
+import ShareButton from '@/components/ShareButton';
+export default async function Home() {
+  const sb = supabaseServer();
+  const {data: {user}} = await sb.auth.getUser();
+  const [{data: dev}, {data: arts}] = await Promise.all([
+    sb.from('devotions').select('*').order('day', {ascending: false}).limit(1).maybeSingle(),
+    sb.from('articles').select('slug,title,read_minutes,topic').eq('published', true).eq('locale', getLocale()).order('created_at', {ascending: false}).limit(2)]);
+  const streak = user ? await getStreak(sb, user.id) : 0;
+  const cont = user ? await getContinuePlan(sb, user.id) : null;
+  return (<div className="px-5 pt-12">
+    <header className="flex items-center justify-between">
+      <div><p className="text-sm text-mute"><Greeting /></p><h1 className="font-serif text-[36px] font-bold leading-tight">Today</h1></div>
+      {user ? <span className="flex items-center gap-1.5 rounded-full bg-mist px-3.5 py-2 text-sm font-semibold"><Flame size={16} className="text-leaf" />{streak}-day streak</span>
+        : <Link href="/login" className="rounded-full bg-ink px-5 py-2.5 text-sm font-semibold text-white">Log in</Link>}
+    </header>
+    {dev && <section className="mt-5 rounded-[28px] bg-ink p-6 text-white">
+      <div className="flex items-start justify-between"><span className="label !text-white/60">Daily devotion</span>
+        <ShareButton tone="dark" path="/devotion" title="Biblesyn daily devotion" text={`"${dev.verse_text}" ${dev.verse_ref}`} /></div>
+      <p className="mt-5 font-serif text-[30px] font-semibold leading-[1.15]">{dev.verse_text}</p>
+      <p className="mt-2 text-sm text-white/60">{dev.verse_ref}</p>
+      <p className="mt-4 text-[15px] leading-relaxed text-white/80">{dev.reflection}</p>
+      <div className="mt-6 grid grid-cols-2 gap-3">
+        <Link href="/devotion" className="btn bg-white text-ink"><BookOpen size={18} />Read</Link>
+        <Link href="/devotion?listen=1" className="btn border border-white/30 text-white"><Headphones size={18} />Listen</Link></div></section>}
+    {cont && <Link href={`/plans/${cont.slug}`} className="mt-4 block rounded-3xl bg-mist p-5">
+      <span className="label">Continue your plan</span><div className="mt-1 font-serif text-2xl font-bold">{cont.title}</div>
+      <div className="mt-3 h-1.5 rounded-full bg-line"><div className="h-1.5 rounded-full bg-leaf" style={{width: `${Math.round((cont.done / cont.days) * 100)}%`}} /></div>
+      <div className="mt-2 text-xs text-mute">Day {cont.next} of {cont.days}</div></Link>}
+    <h2 className="label mb-2 mt-7 px-1">From the library</h2>
+    <div className="space-y-2">{arts?.map((a: any) => <Link key={a.slug} href={`/library/${a.slug}`} className="card flex items-center gap-3 p-4">
+      <div className="flex-1"><div className="font-serif text-xl font-bold leading-tight">{a.title}</div><div className="mt-1 text-xs text-mute">{a.read_minutes} min · Read or listen</div></div>
+      <span className="flex h-9 w-9 items-center justify-center rounded-full bg-mist"><Play size={14} fill="currentColor" /></span></Link>)}</div>
+  </div>);
 }

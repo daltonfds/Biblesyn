@@ -1,12 +1,18 @@
 'use server';
 import {revalidatePath} from 'next/cache';
+import {redirect} from 'next/navigation';
 import {supabaseServer} from '@/lib/supabase/server';
 export async function addEntry(fd: FormData) {
   const body = String(fd.get('body') ?? '').trim(); if (!body) return;
   await supabaseServer().from('journal_entries').insert({body, verse_ref: String(fd.get('verse_ref') ?? '') || null});
-  revalidatePath('/journal');
+  revalidatePath('/journal'); revalidatePath('/plans');
 }
-export async function deleteEntry(fd: FormData) {
-  await supabaseServer().from('journal_entries').delete().eq('id', String(fd.get('id')));
-  revalidatePath('/journal');
+export async function deleteEntry(fd: FormData) { await supabaseServer().from('journal_entries').delete().eq('id', String(fd.get('id'))); revalidatePath('/journal'); }
+export async function addGoal(fd: FormData) {
+  const body = String(fd.get('body') ?? '').trim(); if (!body) return;
+  await supabaseServer().from('goals').insert({body}); revalidatePath('/journal');
 }
+export async function toggleGoal(fd: FormData) {
+  await supabaseServer().from('goals').update({done: fd.get('done') !== '1'}).eq('id', String(fd.get('id'))); revalidatePath('/journal');
+}
+export async function signOut() { await supabaseServer().auth.signOut(); redirect('/'); }

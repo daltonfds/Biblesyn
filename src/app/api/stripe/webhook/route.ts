@@ -1,8 +1,10 @@
 import Stripe from 'stripe';
 import {supabaseAdmin} from '@/lib/supabase/admin';
+export const runtime = 'nodejs';
 export async function POST(req: Request) {
+  const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
   let ev: Stripe.Event;
-  try { const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!); ev = stripe.webhooks.constructEvent(await req.text(), req.headers.get('stripe-signature')!, process.env.STRIPE_WEBHOOK_SECRET!); }
+  try { ev = stripe.webhooks.constructEvent(await req.text(), req.headers.get('stripe-signature')!, process.env.STRIPE_WEBHOOK_SECRET!); }
   catch { return new Response('bad signature', {status: 400}); }
   const db = supabaseAdmin();
   if (ev.type === 'checkout.session.completed') {

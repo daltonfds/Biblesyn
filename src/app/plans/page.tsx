@@ -1,10 +1,26 @@
 import Link from 'next/link';
+import {Flame, CheckCheck, NotebookPen, ChevronRight} from 'lucide-react';
 import {supabaseServer} from '@/lib/supabase/server';
-import Icon from '@/components/Icon';
-export default async function Plans(){
- const {data:plans}=await supabaseServer().from('study_plans').select('slug,title,description,days').eq('published',true).order('sort');
- return <div className="px-5 pt-12">
-  <p className="text-[10px] font-semibold uppercase tracking-[.2em] text-green">A RHYTHM OF GROWTH</p><h1 className="mt-2 font-serif text-[34px] font-semibold">Study Plans</h1><p className="mt-2 text-sm leading-6 text-muted">Build a deeper understanding through guided time in Scripture.</p>
-  <div className="mt-7 space-y-3">{plans?.length?plans.map((plan:any,i:number)=><Link key={plan.slug} href={`/plans/${plan.slug}`} className="group flex items-start gap-4 rounded-[22px] border border-line p-5 transition hover:border-[#B8CBBE] hover:bg-[#FCFDFC]"><span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-greenSoft font-serif text-xl text-green">{String(i+1).padStart(2,'0')}</span><span className="min-w-0 flex-1"><span className="block font-serif text-[22px] font-semibold leading-tight">{plan.title}</span>{plan.description&&<span className="mt-2 block text-sm leading-6 text-muted">{plan.description}</span>}<span className="mt-3 block text-[11px] font-semibold text-green">{plan.days} days · Explore plan</span></span><Icon name="arrow-up-right" size={18} className="mt-1 text-muted"/></Link>):<div className="rounded-[22px] border border-dashed border-[#DADADA] px-6 py-10 text-center"><div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-greenSoft text-green"><Icon name="calendar-days"/></div><h2 className="mt-4 font-serif text-2xl font-semibold">Your next chapter starts here</h2><p className="mt-2 text-sm leading-6 text-muted">There are no published study plans yet. New guided plans will appear here after editorial review.</p></div>}</div>
- </div>;
+import {getStreak, getContinuePlan} from '@/lib/progress';
+export const metadata = {title: 'Study Plans'};
+export default async function Plans() {
+  const sb = supabaseServer();
+  const {data: {user}} = await sb.auth.getUser();
+  const {data: plans} = await sb.from('study_plans').select('id,slug,title,description,days').eq('published', true).order('sort');
+  let stats: {streak: number; done: number; notes: number} | null = null; let cont: Awaited<ReturnType<typeof getContinuePlan>> = null;
+  if (user) {
+    const [streak, {data: prog}, {count}] = await Promise.all([getStreak(sb, user.id), sb.from('plan_progress').select('plan_id').eq('user_id', user.id), sb.from('journal_entries').select('*', {count: 'exact', head: true}).eq('user_id', user.id)]);
+    const per: Record<string, number> = {}; (prog ?? []).forEach((r: any) => { per[r.plan_id] = (per[r.plan_id] ?? 0) + 1; });
+    stats = {streak, done: (plans ?? []).filter((p: any) => (per[p.id] ?? 0) >= p.days).length, notes: count ?? 0};
+    cont = await getContinuePlan(sb, user.id);
+  }
+  const S = ({Icon, n, l}: {Icon: any; n: number; l: string}) => <div className="flex-1 rounded-2xl bg-mist p-3 text-center"><Icon size={16} className="mx-auto text-leaf" /><div className="mt-1 font-serif text-2xl font-bold">{n}</div><div className="text-[11px] text-mute">{l}</div></div>;
+  return (<div className="px-5 pt-12"><h1 className="font-serif text-[36px] font-bold leading-tight">Study Plans</h1>
+    {stats && <div className="mt-4 flex gap-2"><S Icon={Flame} n={stats.streak} l="Day streak" /><S Icon={CheckCheck} n={stats.done} l="Plans done" /><S Icon={NotebookPen} n={stats.notes} l="Journal notes" /></div>}
+    {cont && <Link href={`/plans/${cont.slug}`} className="mt-4 block rounded-[28px] bg-ink p-5 text-white"><span className="label !text-white/60">In progress</span>
+      <div className="mt-1 font-serif text-[26px] font-bold">{cont.title}</div><div className="mt-1 text-sm text-white/70">Day {cont.next} of {cont.days}</div>
+      <div className="my-4 h-1.5 rounded-full bg-white/20"><div className="h-1.5 rounded-full bg-leaf" style={{width: `${Math.round((cont.done / cont.days) * 100)}%`}} /></div>
+      <span className="btn bg-white text-ink !w-auto px-6">Continue Day {cont.next}</span></Link>}
+    <h2 className="label mb-2 mt-7 px-1">Explore plans</h2>
+    <div className="space-y-2">{plans?.map((p: any) => <Link key={p.slug} href={`/plans/${p.slug}`} className="card flex items-center gap-3 p-4"><div className="flex-1"><div className="font-serif text-xl font-bold">{p.title}</div><div className="mt-0.5 text-xs text-mute">{p.days} days</div></div><ChevronRight size={18} className="text-mute" /></Link>)}</div></div>);
 }

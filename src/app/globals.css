@@ -1,16 +1,11 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
-
-:root { color-scheme: light; }
-html { background:#fff; scroll-behavior:smooth; }
-body {
-  background:#fff;
-  color:#111;
-  font-family:var(--poppins),Arial,sans-serif;
-  -webkit-font-smoothing:antialiased;
+@tailwind base;@tailwind components;@tailwind utilities;
+html{-webkit-tap-highlight-color:transparent}
+body{background:#fff;color:#0B0B0B}
+@layer components{
+  .btn{@apply inline-flex h-12 w-full items-center justify-center gap-2 rounded-full text-[15px] font-semibold transition active:scale-[.98] disabled:opacity-60}
+  .btn-ink{@apply btn bg-ink text-white}
+  .btn-line{@apply btn border border-line bg-white text-ink}
+  .card{@apply rounded-3xl border border-line bg-white}
+  .label{@apply text-[11px] font-semibold uppercase tracking-[.14em] text-mute}
+  .field{@apply h-12 w-full rounded-full border border-line bg-white px-5 text-[15px] outline-none focus:border-ink}
 }
-body * { font-family:var(--poppins),Arial,sans-serif; }
-button,a,input,textarea,select { -webkit-tap-highlight-color:transparent; font:inherit; }
-::selection { background:#e4eee7; color:#111; }
-:focus-visible { outline:2px solid #286548; outline-offset:3px; }

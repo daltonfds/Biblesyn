@@ -1,23 +1,20 @@
 'use client';
 import Link from 'next/link';
 import {usePathname} from 'next/navigation';
-import Icon from '@/components/Icon';
+import {House, BookOpen, CalendarCheck, Sparkles, User} from 'lucide-react';
 const tabs = [
-  {href:'/',label:'Home',icon:'home' as const},
-  {href:'/library',label:'Library',icon:'book-open' as const},
-  {href:'/plans',label:'Plans',icon:'calendar-days' as const},
-  {href:'/assistant',label:'Assistant',icon:'message-circle' as const},
-  {href:'/journal',label:'You',icon:'user-round' as const}
+  {href: '/', label: 'Home', Icon: House}, {href: '/library', label: 'Library', Icon: BookOpen},
+  {href: '/plans', label: 'Plans', Icon: CalendarCheck}, {href: '/assistant', label: 'Assistant', Icon: Sparkles},
+  {href: '/journal', label: 'You', Icon: User},
 ];
-export default function Nav(){
- const path=usePathname();
- return <nav aria-label="Main navigation" className="fixed inset-x-0 bottom-0 z-40 border-t border-line bg-white/95 backdrop-blur">
-  <div className="mx-auto flex max-w-[520px] items-center justify-around px-2 pb-[max(env(safe-area-inset-bottom),10px)] pt-2">
-   {tabs.map(({href,label,icon})=>{const active=href==='/'?path==='/':path.startsWith(href);
-    return <Link key={href} href={href} aria-current={active?'page':undefined} className={`flex min-w-0 flex-1 flex-col items-center gap-1 rounded-xl py-2 text-[10px] font-medium transition-colors ${active?'text-green':'text-[#858585] hover:text-ink'}`}>
-     <span className={`flex h-8 w-11 items-center justify-center rounded-xl ${active?'bg-greenSoft':'bg-transparent'}`}><Icon name={icon} size={20}/></span><span>{label}</span>
-    </Link>;
-   })}
-  </div>
- </nav>;
+export default function Nav() {
+  const p = usePathname();
+  if (/^\/(login|signup)/.test(p)) return null;
+  return (<nav aria-label="Main" className="fixed inset-x-0 bottom-0 z-40 border-t border-line bg-white/95 pb-[env(safe-area-inset-bottom)] backdrop-blur">
+    <ul className="mx-auto flex max-w-md">{tabs.map(({href, label, Icon}) => {
+      const on = href === '/' ? p === '/' : p.startsWith(href);
+      return (<li key={href} className="flex-1"><Link href={href} aria-current={on ? 'page' : undefined} className="flex flex-col items-center gap-1 py-2.5">
+        <span className={`flex h-8 w-14 items-center justify-center rounded-full transition ${on ? 'bg-ink text-white' : 'text-mute'}`}><Icon size={22} strokeWidth={on ? 2.4 : 1.8} /></span>
+        <span className={`text-[11px] ${on ? 'font-semibold text-ink' : 'text-mute'}`}>{label}</span></Link></li>);
+    })}</ul></nav>);
 }

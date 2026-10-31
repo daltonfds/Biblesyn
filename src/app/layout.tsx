@@ -1,28 +1,16 @@
 import './globals.css';
-import { Poppins } from 'next/font/google';
+import type {Metadata, Viewport} from 'next';
+import {Source_Serif_4, Inter} from 'next/font/google';
 import Nav from '@/components/Nav';
-
-const poppins = Poppins({
-  subsets: ['latin'],
-  weight: ['400', '500', '600', '700'],
-  variable: '--poppins',
-  display: 'swap',
-});
-
-export const metadata = {
-  title: 'Biblesyn',
+const serif = Source_Serif_4({subsets: ['latin'], variable: '--serif', style: ['normal', 'italic']});
+const sans = Inter({subsets: ['latin'], variable: '--sans'});
+export const metadata: Metadata = {
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'),
+  title: {default: 'Biblesyn', template: '%s · Biblesyn'},
   description: 'Understand the Word. Strengthen Your Spirit.',
+  openGraph: {siteName: 'Biblesyn', type: 'website'},
 };
-
-export default function RootLayout({ children }: { children: React.ReactNode }) {
-  return (
-    <html lang="en" className={poppins.variable}>
-      <body className="min-h-screen bg-white font-sans text-ink">
-        <main className="mx-auto min-h-screen max-w-[520px] border-x border-[#F5F5F5] pb-28">
-          {children}
-        </main>
-        <Nav />
-      </body>
-    </html>
-  );
+export const viewport: Viewport = {themeColor: '#ffffff', viewportFit: 'cover'};
+export default function RootLayout({children}: {children: React.ReactNode}) {
+  return (<html lang="en" className={`${serif.variable} ${sans.variable}`}><body className="min-h-screen font-sans antialiased"><main className="mx-auto max-w-md pb-28">{children}</main><Nav /></body></html>);
 }

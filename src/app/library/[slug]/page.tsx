@@ -1,20 +1,35 @@
 import Link from 'next/link';
 import {notFound} from 'next/navigation';
+import type {Metadata} from 'next';
+import {ChevronLeft, Bookmark, Lock} from 'lucide-react';
 import {supabaseServer} from '@/lib/supabase/server';
 import Gate from '@/components/Gate';
-import Icon from '@/components/Icon';
-export default async function Article({params}:{params:{slug:string}}){
- const sb=supabaseServer();
- const {data:a}=await sb.from('articles').select('id,slug,title,topic,excerpt,read_minutes,audio_url').eq('slug',params.slug).eq('published',true).maybeSingle();
- if(!a) notFound();
- const [{data:{user}},{data:b}]=await Promise.all([sb.auth.getUser(),sb.from('article_bodies').select('body').eq('article_id',a.id).maybeSingle()]);
- return <article className="px-5 pt-10">
-  <Link href="/library" className="inline-flex items-center gap-1 text-xs font-medium text-muted"><Icon name="chevron-left" size={17}/> Library <span className="text-[#C4C4C4]">/</span> {a.topic}</Link>
-  <p className="mt-8 text-[10px] font-semibold uppercase tracking-[.2em] text-green">{a.topic}</p>
-  <h1 className="mt-3 font-serif text-[36px] font-semibold leading-[1.12] tracking-tight">{a.title}</h1>
-  <div className="mt-4 flex items-center gap-3 text-xs text-muted"><span>{a.read_minutes} min read</span><span className="h-1 w-1 rounded-full bg-[#BDBDBD]"/><span>Spiritual study</span></div>
-  {a.audio_url&&<section className="mt-7 rounded-2xl border border-line p-4"><div className="mb-3 flex items-center gap-2 text-xs font-semibold"><Icon name="headphones" size={17}/> Listen to this study</div><audio controls className="w-full" src={a.audio_url}/></section>}
-  {b?<div className="mt-8 whitespace-pre-line text-[15px] leading-[1.95] text-[#333]">{b.body}</div>:<><p className="mt-7 text-[15px] leading-7 text-muted">{a.excerpt}</p>{user?<section className="my-8 rounded-[24px] bg-ink p-6 text-white"><Icon name="lock" size={20} className="text-[#9AB9A5]"/><h2 className="mt-4 font-serif text-3xl font-semibold">Continue your study</h2><p className="mt-2 text-sm leading-6 text-white/70">This full study is part of the Biblesyn library.</p><Link href="/premium" className="mt-5 inline-flex rounded-full bg-white px-5 py-3 text-sm font-semibold text-ink">Explore Premium</Link></section>:<Gate next={`/library/${a.slug}`}/>}</>}
-  <div className="mt-10 border-t border-line pt-5"><Link href="/library" className="inline-flex items-center gap-2 text-sm font-semibold"><Icon name="chevron-left" size={17}/> Back to library</Link></div>
- </article>;
+import ShareButton from '@/components/ShareButton';
+import ArticleReader from '@/components/ArticleReader';
+import {toggleSave} from './actions';
+export async function generateMetadata({params}: {params: {slug: string}}): Promise<Metadata> {
+  const {data: a} = await supabaseServer().from('articles').select('title,excerpt').eq('slug', params.slug).maybeSingle();
+  if (!a) return {};
+  return {title: a.title, description: a.excerpt ?? undefined, openGraph: {title: a.title, description: a.excerpt ?? undefined, type: 'article'}, twitter: {card: 'summary_large_image'}};
+}
+export default async function Article({params}: {params: {slug: string}}) {
+  const sb = supabaseServer();
+  const {data: a} = await sb.from('articles').select('id,slug,title,topic,excerpt,read_minutes,audio_url').eq('slug', params.slug).eq('published', true).maybeSingle();
+  if (!a) notFound();
+  const {data: {user}} = await sb.auth.getUser();
+  const {data: b} = await sb.from('article_bodies').select('body').eq('article_id', a.id).maybeSingle();
+  const {data: saved} = user ? await sb.from('saved_articles').select('article_id').eq('article_id', a.id).maybeSingle() : {data: null};
+  return (<article className="px-6 pt-8">
+    <div className="flex items-center justify-between"><Link href="/library" aria-label="Back to library" className="flex h-10 w-10 items-center justify-center rounded-full bg-mist"><ChevronLeft size={20} /></Link>
+      <div className="flex items-center gap-2">
+        {user && <form action={toggleSave}><input type="hidden" name="article_id" value={a.id} /><input type="hidden" name="slug" value={a.slug} /><input type="hidden" name="saved" value={saved ? '1' : '0'} />
+          <button aria-label={saved ? 'Remove from saved' : 'Save'} className="flex h-10 w-10 items-center justify-center rounded-full bg-mist"><Bookmark size={18} fill={saved ? 'currentColor' : 'none'} /></button></form>}
+        <ShareButton path={`/library/${a.slug}`} title={a.title} text={`${a.title} · Biblesyn`} /></div></div>
+    <p className="label mt-6">{a.topic} · {a.read_minutes} min</p>
+    <h1 className="mb-5 mt-2 font-serif text-[36px] font-bold leading-[1.1]">{a.title}</h1>
+    {b ? <ArticleReader body={b.body} audioSrc={a.audio_url ?? `/api/tts?slug=${a.slug}`} />
+      : (<><p className="font-serif text-[19px] leading-[1.7]">{a.excerpt}</p>
+        {user ? <section className="my-6 rounded-[28px] bg-ink p-6 text-center text-white"><span className="mx-auto flex h-11 w-11 items-center justify-center rounded-full bg-white/10"><Lock size={20} /></span><h2 className="mt-4 font-serif text-[28px] font-bold">Unlock the full library</h2><Link href="/premium" className="btn mt-5 bg-leaf text-white">See Premium</Link></section>
+          : <Gate next={`/library/${a.slug}`} />}</>)}
+  </article>);
 }

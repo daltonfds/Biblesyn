@@ -1,14 +1,25 @@
+import {cookies, headers} from 'next/headers';
 import Link from 'next/link';
+import {Check, Library, Sparkles, CalendarCheck, Headphones, NotebookPen} from 'lucide-react';
 import {supabaseServer} from '@/lib/supabase/server';
-import Icon from '@/components/Icon';
-const FEATURES=['Full Spiritual Library','Bible AI Assistant','Complete study plans','Audio for every study','Personal spiritual journal'];
-export default async function Premium(){
- const {data:{user}}=await supabaseServer().auth.getUser();
- return <div className="px-6 pb-12 pt-12">
-  <Link href="/" className="text-[10px] font-semibold tracking-[.24em] text-green">BIBLESYN</Link>
-  <div className="mt-14"><p className="text-[10px] font-semibold uppercase tracking-[.2em] text-green">BIBLESYN PREMIUM</p><h1 className="mt-3 font-serif text-[40px] font-semibold leading-[1.08]">One plan.<br/>The whole experience.</h1><p className="mt-4 text-sm leading-6 text-muted">Everything you need to study deeply, reflect honestly and grow consistently.</p></div>
-  <div className="mt-9 rounded-[26px] bg-ink p-6 text-white"><div className="flex items-center justify-between"><span className="text-[10px] font-semibold tracking-[.2em] text-[#A9C7B4]">PREMIUM MEMBERSHIP</span><Icon name="sparkles" className="text-[#A9C7B4]"/></div><div className="mt-5 flex items-end gap-2"><span className="font-serif text-6xl font-semibold">$1</span><span className="pb-2 text-sm text-white/60">/ month</span></div><p className="mt-1 text-xs text-white/60">Cancel anytime.</p><div className="my-6 h-px bg-white/15"/><ul className="space-y-4">{FEATURES.map(f=><li key={f} className="flex items-center gap-3 text-sm"><span className="flex h-5 w-5 items-center justify-center rounded-full bg-white/10 text-[#A9C7B4]"><Icon name="check" size={13}/></span>{f}</li>)}</ul></div>
-  {user?<form action="/api/stripe/checkout" method="post" className="mt-5"><button className="h-14 w-full rounded-full bg-green px-5 text-sm font-semibold text-white transition hover:bg-[#20543B]">Subscribe · $1/month</button></form>:<Link href="/signup?next=/premium" className="mt-5 block rounded-full bg-ink py-4 text-center text-sm font-semibold text-white transition hover:bg-green">Create account to subscribe</Link>}
-  <p className="mt-5 text-center text-[11px] leading-5 text-muted">Secure recurring payment through Stripe. Renews monthly until cancelled.</p>
- </div>;
+export const metadata = {title: 'Premium'};
+const FEATURES = [[Library, 'Full Spiritual Library'], [Sparkles, 'Bible AI Assistant'], [CalendarCheck, 'All study plans'], [Headphones, 'Audio for every study'], [NotebookPen, 'Journal and growth dashboard']] as const;
+export default async function Premium({searchParams}: {searchParams: {country?: string}}) {
+  const sb = supabaseServer();
+  const {data: prices} = await sb.from('prices').select('country,currency,amount_cents').eq('active', true).order('country');
+  const wanted = (searchParams.country || cookies().get('country')?.value || headers().get('x-vercel-ip-country') || 'US').toUpperCase();
+  const p = prices?.find((r: any) => r.country === wanted) ?? prices?.find((r: any) => r.country === '*');
+  const country = prices?.some((r: any) => r.country === wanted) ? wanted : '*';
+  const price = p ? new Intl.NumberFormat('en', {style: 'currency', currency: p.currency}).format(p.amount_cents / 100) : '';
+  const {data: {user}} = await sb.auth.getUser();
+  return (<div className="px-6 pt-12"><div className="font-serif text-sm font-bold tracking-[.2em] text-leaf">BIBLESYN PREMIUM</div>
+    <h1 className="mb-6 mt-2 font-serif text-[38px] font-bold leading-[1.05]">One plan. The whole experience.</h1>
+    <ul className="mb-6 space-y-3">{FEATURES.map(([I, f]) => <li key={f} className="flex items-center gap-3 text-[15px]"><span className="flex h-8 w-8 items-center justify-center rounded-full bg-leafsoft text-leaf"><I size={16} /></span>{f}<Check size={16} className="ml-auto text-leaf" /></li>)}</ul>
+    <div className="flex items-center justify-between rounded-3xl border-2 border-ink p-5"><div><div className="text-sm font-semibold">Monthly</div><div className="text-xs text-mute">Cancel anytime</div></div>
+      <div className="font-serif text-4xl font-bold">{price}<span className="font-sans text-xs font-normal text-mute">/mo</span></div></div>
+    <form method="get" className="mt-3 flex items-center gap-2 text-xs text-mute"><label>Price for <select name="country" defaultValue={country} className="rounded-lg border border-line bg-white p-1.5 text-ink">{prices?.map((r: any) => <option key={r.country} value={r.country}>{r.country === '*' ? 'Other countries' : r.country} ({r.currency})</option>)}</select></label><button className="font-semibold underline">Update</button></form>
+    {user ? <form action="/api/stripe/checkout" method="post" className="mt-5"><input type="hidden" name="country" value={country} /><button className="btn-ink !h-14">Subscribe · {price}/month</button></form>
+      : <Link href="/signup?next=/premium" className="btn-ink mt-5 !h-14">Create account to subscribe</Link>}
+    <p className="mt-3 text-center"><Link href="/" className="text-sm text-mute">Not now</Link></p>
+    <p className="mt-3 text-center text-[11px] text-mute">Secure payment with Stripe. Renews monthly until cancelled.</p></div>);
 }
