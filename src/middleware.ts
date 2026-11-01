@@ -19,7 +19,7 @@ export async function middleware(req: NextRequest) {
     }},
   });
   const {data: {user}} = await sb.auth.getUser();
-  if (!user && /^\/(journal|admin)/.test(req.nextUrl.pathname)) {
+  if (!user && /^\\/(journal|admin)/.test(req.nextUrl.pathname)) {
     const u = req.nextUrl.clone(); u.pathname = '/login'; u.searchParams.set('next', req.nextUrl.pathname);
     return NextResponse.redirect(u);
   }
@@ -28,7 +28,6 @@ export async function middleware(req: NextRequest) {
   const country = (req.cookies.get('country')?.value || req.headers.get('x-vercel-ip-country') || '').toUpperCase();
   if (!req.cookies.get('country') && country) res.cookies.set('country', country, opt);
 
-  // Keep an explicit language choice. Otherwise choose country first, then browser language.
   if (!req.cookies.get('locale')) {
     const browserLocale = req.headers.get('accept-language')?.split(',')[0]?.trim().toLowerCase().split(/[-_]/)[0];
     const locale = COUNTRY_LOCALE[country] || (browserLocale && SUPPORTED_LOCALES.has(browserLocale) ? browserLocale : 'en');
@@ -36,4 +35,4 @@ export async function middleware(req: NextRequest) {
   }
   return res;
 }
-export const config = {matcher: ['/((?!_next/static|_next/image|favicon.ico|api/stripe/webhook).*)']};
+export const config = {matcher: ['/((?!_next/static|_next/image|favicon.ico|api/stripe/webhook|api/webhooks/escalepay).*)']};
