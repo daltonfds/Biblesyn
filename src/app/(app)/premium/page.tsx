@@ -14,6 +14,6 @@ export default async function Premium() {
     <div className="flex items-center justify-between rounded-3xl border-2 border-ink px-5 py-[18px]"><div><div className="whitespace-nowrap text-sm font-semibold">{t('premium.monthly')}</div><div className="whitespace-nowrap text-xs text-mute">{t('premium.cancel_anytime')}</div></div>
       <div className="whitespace-nowrap font-serif text-4xl font-bold">{PRICE.now}</div></div>
     <a href={CHECKOUT_URL} rel="noopener" className="btn-ink !mt-5 !h-14">{t('premium.subscribe', {price: PRICE.now})}</a>
-    <p className="mt-3.5 text-center"><Link href="/" className="text-sm text-mute">{t('premium.not_now')}</Link></p>
+    <p className="mt-3.5 text-center"><Link href="/home" className="text-sm text-mute">{t('premium.not_now')}</Link></p>
   </div>);
 }
