@@ -3,16 +3,19 @@ import {cookies, headers} from 'next/headers';
 import {supabaseServer} from '@/lib/supabase/server';
 
 export const FONTS = ['serif', 'sans', 'classic'] as const;
-const SUPPORTED_LOCALES = ['en', 'pt', 'fr', 'es'] as const;
+const SUPPORTED_LOCALES = ['en', 'en-ZA', 'pt-BR', 'pt-PT', 'fr', 'es', 'it'] as const;
 const COUNTRY_LOCALE: Record<string, string> = {
-  MZ: 'pt', BR: 'pt', PT: 'pt', AO: 'pt', CV: 'pt', GW: 'pt', ST: 'pt', TL: 'pt',
-  US: 'en', GB: 'en', IE: 'en', CA: 'en', AU: 'en', NZ: 'en', ZA: 'en',
-  FR: 'fr', BE: 'fr', MC: 'fr', LU: 'fr', SN: 'fr', CI: 'fr', CD: 'fr', CG: 'fr',
-  ES: 'es', MX: 'es', AR: 'es', CO: 'es', CL: 'es', PE: 'es', VE: 'es', UY: 'es',
+  BR: 'pt-BR', PT: 'pt-PT', AO: 'pt-PT', MZ: 'pt-PT', CV: 'pt-PT',
+  FR: 'fr', BE: 'fr', CH: 'fr', LU: 'fr',
+  ES: 'es', MX: 'es', AR: 'es', CO: 'es', CL: 'es', PE: 'es',
+  IT: 'it', SM: 'it', VA: 'it', ZA: 'en-ZA',
+  US: 'en', GB: 'en', CA: 'en', AU: 'en',
 };
 function supportedLocale(value?: string | null): string | null {
-  const code = value?.trim().toLowerCase().split(/[-_,;]/)[0];
-  return code && (SUPPORTED_LOCALES as readonly string[]).includes(code) ? code : null;
+  if (!value) return null;
+  const normalized = value.trim().replace('_', '-');
+  if (normalized === 'pt') return 'pt-BR';
+  return (SUPPORTED_LOCALES as readonly string[]).find(code => code.toLowerCase() === normalized.toLowerCase()) ?? null;
 }
 export const getLanguages = cache(async () => {
   const {data} = await supabaseServer().from('languages').select('code,name,native_name,is_default').eq('active', true).order('sort');
@@ -23,18 +26,15 @@ export const getCountries = cache(async () => {
   return (data ?? []) as {code: string; name: string; default_locale: string | null}[];
 });
 export const getLocale = cache(async (): Promise<string> => {
-  const langs = await getLanguages();
-  const available = new Set(langs.map(l => l.code.toLowerCase()));
-  const saved = supportedLocale(cookies().get('locale')?.value);
-  if (saved && available.has(saved)) return saved;
+  const manual = supportedLocale(cookies().get('NEXT_LOCALE')?.value || cookies().get('locale')?.value);
+  if (manual) return manual;
 
-  const country = (cookies().get('country')?.value || headers().get('x-vercel-ip-country') || '').toUpperCase();
+  const country = (headers().get('x-vercel-ip-country') || cookies().get('country')?.value || '').toUpperCase();
   const countryLocale = supportedLocale(COUNTRY_LOCALE[country]);
-  if (countryLocale && available.has(countryLocale)) return countryLocale;
+  if (countryLocale) return countryLocale;
 
-  const browserLocale = supportedLocale(headers().get('accept-language')?.split(',')[0]);
-  if (browserLocale && available.has(browserLocale)) return browserLocale;
-  return langs.find(l => l.is_default)?.code ?? langs[0]?.code ?? 'en';
+  const browser = headers().get('accept-language')?.split(',')[0]?.split(';')[0];
+  return supportedLocale(browser) || 'en';
 });
 export function getCountry(): string {
   return (cookies().get('country')?.value || headers().get('x-vercel-ip-country') || '').toUpperCase();
