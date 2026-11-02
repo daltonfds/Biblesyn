@@ -1,6 +1,8 @@
 import './globals.css';
 import type {Metadata, Viewport} from 'next';
+import {Suspense} from 'react';
 import I18nProvider from '@/components/I18nProvider';
+import VisitorTracker from '@/components/VisitorTracker';
 import {getLocale} from '@/lib/locale';
 import {getStrings} from '@/lib/i18n';
 
@@ -24,6 +26,7 @@ export default async function RootLayout({children}: {children: React.ReactNode}
       </head>
       <body className="min-h-screen antialiased">
         <I18nProvider strings={strings} locale={locale}>{children}</I18nProvider>
+        <Suspense fallback={null}><VisitorTracker /></Suspense>
       </body>
     </html>
   );

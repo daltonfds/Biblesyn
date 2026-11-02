@@ -3,7 +3,7 @@ import AdminNav from '@/components/AdminNav';
 import {requireStaff} from '@/lib/admin';
 export const metadata = {title: 'Admin'};
 export const dynamic = 'force-dynamic';
-const ITEMS: [string, string, boolean][] = [['/admin', 'Dashboard', true], ['/admin/users', 'Users', true], ['/admin/subscriptions', 'Subscriptions', true], ['/admin/earnings', 'Earnings', true],
+const ITEMS: [string, string, boolean][] = [['/admin', 'Dashboard', true], ['/admin/visitors', 'Visitors', true], ['/admin/users', 'Users', true], ['/admin/subscriptions', 'Subscriptions', true], ['/admin/earnings', 'Earnings', true],
   ['/admin/articles', 'Articles', false], ['/admin/plans', 'Plans', false], ['/admin/devotions', 'Devotions', false], ['/admin/topics', 'Topics', false],
   ['/admin/languages', 'Languages', true], ['/admin/pricing', 'Countries & pricing', true], ['/admin/strings', 'Interface text', false]];
 export default async function AdminLayout({children}: {children: React.ReactNode}) {
