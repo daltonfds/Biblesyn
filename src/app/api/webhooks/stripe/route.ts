@@ -26,22 +26,38 @@ export async function POST(request: NextRequest) {
     if (session.mode === 'subscription' && userId && subscriptionId) {
       const subscription = await stripe.subscriptions.retrieve(subscriptionId);
       const customerId = typeof subscription.customer === 'string' ? subscription.customer : subscription.customer.id;
-      const row = {
+      const {data: previous} = await db.from('subscriptions').select('id').eq('stripe_subscription_id', subscription.id).maybeSingle();
+      const {error} = await db.from('subscriptions').upsert({
         user_id: userId, stripe_subscription_id: subscription.id, stripe_customer_id: customerId,
         status: subscription.status, currency: subscription.currency.toUpperCase(),
         amount_cents: session.amount_total ?? 0, country: session.metadata?.country ?? null,
         current_period_end: new Date(subscription.current_period_end * 1000).toISOString(),
         cancel_at_period_end: subscription.cancel_at_period_end, updated_at: new Date().toISOString(),
-      };
-      const {error} = await db.from('subscriptions').upsert(row, {onConflict: 'stripe_subscription_id'});
+      }, {onConflict: 'stripe_subscription_id'});
       if (error) return NextResponse.json({error: 'subscription_persist_failed'}, {status: 500});
       await db.from('profiles').update({
-        is_premium: ['active','trialing'].includes(subscription.status), premium_source: 'stripe',
+        is_premium: ['active','trialing'].includes(subscription.status),
+        premium_source: 'stripe', stripe_customer_id: customerId,
       }).eq('id', userId);
       const {data: profile} = await db.from('profiles').select('email,locale').eq('id', userId).maybeSingle();
-      if (profile?.email) await sendSubscriptionConfirmation(profile.email, profile.locale);
+      if (!previous && profile?.email) await sendSubscriptionConfirmation(profile.email, profile.locale);
     }
   }
+
+  if (event.type === 'invoice.payment_succeeded' || event.type === 'invoice.paid') {
+    const invoice = event.data.object as Stripe.Invoice & {subscription?: string | Stripe.Subscription};
+    const subscriptionId = typeof invoice.subscription === 'string' ? invoice.subscription : invoice.subscription?.id;
+    if (subscriptionId) {
+      const subscription = await stripe.subscriptions.retrieve(subscriptionId);
+      const userId = subscription.metadata?.user_id;
+      if (userId) await db.from('payments').upsert({
+        user_id: userId, stripe_invoice_id: invoice.id,
+        currency: invoice.currency.toUpperCase(), amount_cents: invoice.amount_paid ?? 0,
+        country: subscription.metadata?.country ?? null,
+      }, {onConflict: 'stripe_invoice_id'});
+    }
+  }
+
   if (event.type === 'customer.subscription.updated' || event.type === 'customer.subscription.deleted') {
     const subscription = event.data.object as Stripe.Subscription;
     const status = event.type === 'customer.subscription.deleted' ? 'canceled' : subscription.status;

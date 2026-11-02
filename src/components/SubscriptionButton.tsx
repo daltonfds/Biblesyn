@@ -10,8 +10,7 @@ export default function SubscriptionButton({label}: {label: string}) {
     setBusy(true); setError('');
     try {
       const response = await fetch('/api/checkout', {
-        method: 'POST', headers: {'content-type': 'application/json'},
-        body: JSON.stringify({locale}),
+        method: 'POST', headers: {'content-type': 'application/json'}, body: JSON.stringify({locale}),
       });
       const data = await response.json();
       if (response.status === 401) {

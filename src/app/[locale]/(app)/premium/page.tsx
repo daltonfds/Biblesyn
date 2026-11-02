@@ -4,6 +4,7 @@ import {getT} from '@/lib/i18n';
 import {getLocale, getCountry} from '@/lib/locale';
 import {getBillingPrice} from '@/lib/offer';
 import SubscriptionButton from '@/components/SubscriptionButton';
+import {supabaseServer} from '@/lib/supabase/server';
 
 export const metadata = {title: 'Premium'};
 const FEATURES = [[Library, 'premium.f1'], [Sparkles, 'premium.f2'], [CalendarCheck, 'premium.f3'], [Headphones, 'premium.f4'], [NotebookPen, 'premium.f5']] as const;
@@ -11,7 +12,14 @@ const FEATURES = [[Library, 'premium.f1'], [Sparkles, 'premium.f2'], [CalendarCh
 export default async function Premium() {
   const t = await getT();
   const locale = await getLocale();
-  const price = await getBillingPrice(locale, getCountry());
+  const sb = supabaseServer();
+  const {data: {user}} = await sb.auth.getUser();
+  let country = getCountry();
+  if (!country && user) {
+    const {data: profile} = await sb.from('profiles').select('country').eq('id', user.id).maybeSingle();
+    country = profile?.country || '';
+  }
+  const price = await getBillingPrice(locale, country);
   return (<div className="px-6 pt-[52px]"><div className="font-serif text-sm font-bold uppercase tracking-[.2em] text-leaf">Biblesyn {t('premium.label')}</div>
     <h1 className="mb-[22px] mt-2 font-serif text-[38px] font-bold leading-[1.05]">{t('premium.title')}</h1>
     <ul className="mb-5 space-y-3">{FEATURES.map(([I, k]) => <li key={k} className="flex items-center gap-3 text-[15px]"><span className="flex h-8 w-8 items-center justify-center rounded-full bg-leafsoft text-leaf"><I size={16} /></span>{t(k)}<Check size={16} strokeWidth={2.4} className="ml-auto text-leaf" /></li>)}</ul>

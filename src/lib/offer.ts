@@ -1,10 +1,7 @@
 import {supabaseServer} from '@/lib/supabase/server';
 
-export const CHECKOUT_URL =
-  process.env.NEXT_PUBLIC_CHECKOUT_URL ?? 'https://checkout.escalepay.com/9630961';
-
+export const CHECKOUT_URL = process.env.NEXT_PUBLIC_CHECKOUT_URL ?? 'https://checkout.escalepay.com/9630961';
 export const PRICE = {old: 'R$ 17', now: 'R$ 5,90', total: 'R$ 97'};
-
 export const BONUSES = [
   {t: 'Manual de Interpretação Bíblica', d: 'Interprete corretamente, evite erros comuns e aplique a hermenêutica de forma simples.'},
   {t: 'Devocionais de Poder: 30 dias', d: 'Reflexões, versículos-chave e orações para fortalecer sua conexão com Deus.'},
@@ -15,14 +12,12 @@ export const BONUSES = [
   {t: 'Guia de Jejum Espiritual', d: 'Passo a passo completo para jejuns que aprofundam a intimidade com Deus.'},
   {t: 'Segredos da Oração', d: 'Técnicas bíblicas de oração que movem montanhas e abrem portas.'},
 ];
-
 export const TEASERS = [
   {q: 'Por que os escolhidos de Deus sofrem tanto?', a: 'Quem tem chamado incomoda o inimigo. Ataque espiritual não é abandono; muitas vezes é sinal de alvo. “Sede sóbrios e vigilantes.” (1 Pedro 5:8)'},
   {q: 'E se eu não conseguir parar de pecar?', a: 'A sua queda não encerra a sua história. “O justo cai sete vezes e se levanta.” (Provérbios 24:16) Confesse, levante-se e recomece.'},
   {q: 'Faça isto quando for tentado', a: 'Saia do ambiente, ore em voz alta, abra a Palavra e fale com alguém de confiança. “Resisti ao diabo, e ele fugirá de vós.” (Tiago 4:7)'},
   {q: '5 batalhas que todo cristão enfrenta', a: 'Mente, tentação, finanças, relacionamentos e constância na oração. Nomear a batalha é o primeiro passo para vencê-la com a Palavra.'},
 ];
-
 export const FAQ = [
   {q: 'Como recebo o acesso?', a: 'Logo após a confirmação do pagamento você recebe as instruções de acesso.'},
   {q: 'Funciona no celular?', a: 'Sim, foi pensado para o celular e também funciona no computador.'},
@@ -38,11 +33,11 @@ const BILLING: Record<string, {currency: string; fallbackCountry: string}> = {
   es: {currency: 'EUR', fallbackCountry: 'ES'},
   it: {currency: 'EUR', fallbackCountry: 'IT'},
 };
-
 export type BillingPrice = {currency: string; amountCents: number; country: string; formatted: string};
 
 export async function getBillingPrice(locale: string, country?: string): Promise<BillingPrice | null> {
   if (locale === 'pt-BR') {
+    if (country?.toUpperCase() !== 'BR') return null;
     return {currency: 'BRL', amountCents: 590, country: 'BR', formatted: 'R$ 5,90'};
   }
   const config = BILLING[locale];
@@ -50,7 +45,6 @@ export async function getBillingPrice(locale: string, country?: string): Promise
   const db = supabaseServer();
   const requestedCountry = country?.toUpperCase();
   let row: {currency: string; amount_cents: number} | null = null;
-
   if (requestedCountry) {
     const result = await db.from('prices').select('currency,amount_cents')
       .eq('country', requestedCountry).eq('active', true).maybeSingle();
@@ -62,7 +56,6 @@ export async function getBillingPrice(locale: string, country?: string): Promise
     row = result.data;
   }
   if (!row || row.currency !== config.currency || !Number.isFinite(row.amount_cents) || row.amount_cents <= 0) return null;
-
   return {
     currency: row.currency,
     amountCents: row.amount_cents,
