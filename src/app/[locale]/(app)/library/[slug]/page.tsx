@@ -1,9 +1,9 @@
-import Link from 'next/link';
+import {Link} from '@/i18n/navigation';
 import {notFound} from 'next/navigation';
 import type {Metadata} from 'next';
 import {ChevronLeft, Bookmark, Lock} from 'lucide-react';
 import {supabaseServer} from '@/lib/supabase/server';
-import {getLocale, getReaderPrefs} from '@/lib/locale';
+import {getLocale, getContentLocale, getReaderPrefs} from '@/lib/locale';
 import {getT} from '@/lib/i18n';
 import Gate from '@/components/Gate';
 import ShareButton from '@/components/ShareButton';
@@ -11,19 +11,21 @@ import ReaderSettings from '@/components/ReaderSettings';
 import ArticleReader from '@/components/ArticleReader';
 import {toggleSave} from './actions';
 export async function generateMetadata({params}: {params: {slug: string}}): Promise<Metadata> {
-  const {data: a} = await supabaseServer().from('articles').select('title,excerpt').eq('slug', params.slug).eq('locale', await getLocale()).maybeSingle();
+  const locale = await getLocale();
+  const contentLocale = getContentLocale(locale);
+  const {data: a} = await supabaseServer().from('articles').select('title,excerpt').eq('slug', params.slug).eq('locale', contentLocale).maybeSingle();
   if (!a) return {};
   return {title: a.title, description: a.excerpt ?? undefined, openGraph: {title: a.title, description: a.excerpt ?? undefined, type: 'article'}, twitter: {card: 'summary_large_image'}};
 }
 export default async function Article({params}: {params: {slug: string}}) {
-  const sb = supabaseServer(); const t = await getT(); const locale = await getLocale(); const prefs = getReaderPrefs();
-  const {data: a} = await sb.from('articles').select('id,slug,title,topic_id,excerpt,read_minutes,audio_url').eq('slug', params.slug).eq('locale', locale).eq('published', true).maybeSingle();
+  const sb = supabaseServer(); const t = await getT(); const locale = await getLocale(); const contentLocale = getContentLocale(locale); const prefs = getReaderPrefs();
+  const {data: a} = await sb.from('articles').select('id,slug,title,topic_id,excerpt,read_minutes,audio_url').eq('slug', params.slug).eq('locale', contentLocale).eq('published', true).maybeSingle();
   if (!a) notFound();
   const {data: {user}} = await sb.auth.getUser();
   const {data: b} = await sb.from('article_bodies').select('body').eq('article_id', a.id).maybeSingle();
   const {data: saved} = user ? await sb.from('saved_articles').select('article_id').eq('article_id', a.id).maybeSingle() : {data: null};
   const {data: tp} = a.topic_id ? await sb.from('topic_names').select('name,locale').eq('topic_id', a.topic_id) : {data: null};
-  const topic = (tp?.find((x: any) => x.locale === locale) ?? tp?.[0])?.name;
+  const topic = (tp?.find((x: any) => x.locale === contentLocale) ?? tp?.[0])?.name;
   return (<article className="px-6 pt-12">
     <div className="flex items-center justify-between"><Link href="/library" aria-label={t('common.back')} className="flex h-10 w-10 items-center justify-center rounded-full bg-mist"><ChevronLeft size={20} /></Link>
       <div className="flex items-center gap-2"><ReaderSettings f={prefs.f} s={prefs.s} />

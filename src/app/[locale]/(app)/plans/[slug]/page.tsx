@@ -1,16 +1,16 @@
 import {notFound} from 'next/navigation';
-import Link from 'next/link';
+import {Link} from '@/i18n/navigation';
 import {ChevronLeft, Check} from 'lucide-react';
 import {supabaseServer} from '@/lib/supabase/server';
-import {getLocale, getReaderPrefs} from '@/lib/locale';
+import {getLocale, getContentLocale, getReaderPrefs} from '@/lib/locale';
 import {getT} from '@/lib/i18n';
 import Gate from '@/components/Gate';
 import ShareButton from '@/components/ShareButton';
 import {FONT_CSS} from '@/components/ReaderSettings';
 import {completeDay} from './actions';
 export default async function Plan({params}: {params: {slug: string}}) {
-  const sb = supabaseServer(); const t = await getT(); const prefs = getReaderPrefs();
-  const {data: plan} = await sb.from('study_plans').select('*').eq('slug', params.slug).eq('locale', await getLocale()).maybeSingle();
+  const sb = supabaseServer(); const t = await getT(); const locale = await getLocale(); const contentLocale = getContentLocale(locale); const prefs = getReaderPrefs();
+  const {data: plan} = await sb.from('study_plans').select('*').eq('slug', params.slug).eq('locale', contentLocale).maybeSingle();
   if (!plan) notFound();
   const {data: {user}} = await sb.auth.getUser();
   const head = (<div className="flex items-center justify-between"><Link href="/plans" aria-label={t('common.back')} className="flex h-10 w-10 items-center justify-center rounded-full bg-mist"><ChevronLeft size={20} /></Link><ShareButton path={`/plans/${plan.slug}`} title={plan.title} text={`${plan.title} · Biblesyn`} /></div>);

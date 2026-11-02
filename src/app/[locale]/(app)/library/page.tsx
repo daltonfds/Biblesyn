@@ -1,16 +1,17 @@
-import Link from 'next/link';
+import {Link} from '@/i18n/navigation';
 import {Search, Play} from 'lucide-react';
 import {supabaseServer} from '@/lib/supabase/server';
-import {getLocale} from '@/lib/locale';
+import {getLocale, getContentLocale} from '@/lib/locale';
 import {getT} from '@/lib/i18n';
 export const metadata = {title: 'Library'};
 export default async function Library({searchParams}: {searchParams: {topic?: string; q?: string}}) {
   const sb = supabaseServer(); const t = await getT(); const locale = await getLocale();
+  const contentLocale = getContentLocale(locale);
   const q = (searchParams.q ?? '').replace(/[,%()*]/g, ' ').trim();
   const {data: topics} = await sb.from('topics').select('id,slug,topic_names(locale,name)').order('sort');
-  const nm = (tp: any) => (tp.topic_names?.find((n: any) => n.locale === locale) ?? tp.topic_names?.[0])?.name ?? tp.slug;
+  const nm = (tp: any) => (tp.topic_names?.find((n: any) => n.locale === contentLocale) ?? tp.topic_names?.[0])?.name ?? tp.slug;
   const cur = topics?.find((x: any) => x.slug === searchParams.topic);
-  let query = sb.from('articles').select('slug,title,topic_id,read_minutes,is_free').eq('published', true).eq('locale', locale).order('created_at', {ascending: false});
+  let query = sb.from('articles').select('slug,title,topic_id,read_minutes,is_free').eq('published', true).eq('locale', contentLocale).order('created_at', {ascending: false});
   if (cur) query = query.eq('topic_id', cur.id);
   if (q) query = query.or(`title.ilike.%${q}%,excerpt.ilike.%${q}%`);
   const {data} = await query; const tname = (id: string | null) => { const x = topics?.find((y: any) => y.id === id); return x ? nm(x) : ''; };

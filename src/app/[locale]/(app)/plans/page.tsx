@@ -1,14 +1,14 @@
-import Link from 'next/link';
+import {Link} from '@/i18n/navigation';
 import {Flame, Check, NotebookPen, ChevronRight} from 'lucide-react';
 import {supabaseServer} from '@/lib/supabase/server';
-import {getLocale} from '@/lib/locale';
+import {getLocale, getContentLocale} from '@/lib/locale';
 import {getT} from '@/lib/i18n';
 import {getStreak, getContinuePlan} from '@/lib/progress';
 export const metadata = {title: 'Plans'};
 export default async function Plans() {
-  const sb = supabaseServer(); const t = await getT(); const locale = await getLocale();
+  const sb = supabaseServer(); const t = await getT(); const locale = await getLocale(); const contentLocale = getContentLocale(locale);
   const {data: {user}} = await sb.auth.getUser();
-  const {data: plans} = await sb.from('study_plans').select('id,slug,title,days').eq('published', true).eq('locale', locale).order('sort');
+  const {data: plans} = await sb.from('study_plans').select('id,slug,title,days').eq('published', true).eq('locale', contentLocale).order('sort');
   let stats: {streak: number; done: number; notes: number} | null = null; let cont: Awaited<ReturnType<typeof getContinuePlan>> = null;
   if (user) {
     const [streak, {data: prog}, {count}] = await Promise.all([getStreak(sb, user.id), sb.from('plan_progress').select('plan_id').eq('user_id', user.id), sb.from('journal_entries').select('*', {count: 'exact', head: true}).eq('user_id', user.id)]);

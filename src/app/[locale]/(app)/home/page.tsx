@@ -1,17 +1,18 @@
-import Link from 'next/link';
+import {Link} from '@/i18n/navigation';
 import {BookOpen, Headphones, Flame, Play, Globe} from 'lucide-react';
 import {supabaseServer} from '@/lib/supabase/server';
-import {getLocale} from '@/lib/locale';
+import {getLocale, getContentLocale} from '@/lib/locale';
 import {getT} from '@/lib/i18n';
 import {getStreak, getContinuePlan} from '@/lib/progress';
 import Greeting from '@/components/Greeting';
 import ShareButton from '@/components/ShareButton';
 export default async function Home() {
   const sb = supabaseServer(); const t = await getT(); const locale = await getLocale();
+  const contentLocale = getContentLocale(locale);
   const {data: {user}} = await sb.auth.getUser(); const today = new Date().toISOString().slice(0, 10);
   const [{data: dev}, {data: arts}] = await Promise.all([
-    sb.from('devotions').select('*').eq('locale', locale).lte('day', today).order('day', {ascending: false}).limit(1).maybeSingle(),
-    sb.from('articles').select('slug,title,read_minutes').eq('published', true).eq('locale', locale).order('created_at', {ascending: false}).limit(2)]);
+    sb.from('devotions').select('*').eq('locale', contentLocale).lte('day', today).order('day', {ascending: false}).limit(1).maybeSingle(),
+    sb.from('articles').select('slug,title,read_minutes').eq('published', true).eq('locale', contentLocale).order('created_at', {ascending: false}).limit(2)]);
   const streak = user ? await getStreak(sb, user.id) : 0; const cont = user ? await getContinuePlan(sb, user.id) : null;
   return (<div className="px-5 pt-[52px]">
     <header className="flex items-center justify-between">

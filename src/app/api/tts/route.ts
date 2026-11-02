@@ -1,7 +1,7 @@
 import {supabaseServer} from '@/lib/supabase/server';
-import {getLocale} from '@/lib/locale';
+import {getLocale, getContentLocale} from '@/lib/locale';
 export async function GET(req: Request) {
-  const sp = new URL(req.url).searchParams; const sb = supabaseServer(); const locale = await getLocale();
+  const sp = new URL(req.url).searchParams; const sb = supabaseServer(); const locale = getContentLocale(await getLocale());
   const {data: {user}} = await sb.auth.getUser(); if (!user) return new Response('login required', {status: 401});
   let input = '';
   if (sp.get('devotion')) {

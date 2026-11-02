@@ -1,13 +1,14 @@
 import {supabaseServer} from '@/lib/supabase/server';
-import {getLocale} from '@/lib/locale';
+import {getLocale, getContentLocale} from '@/lib/locale';
 import {getT} from '@/lib/i18n';
 import ShareButton from '@/components/ShareButton';
 import Gate from '@/components/Gate';
 export const metadata = {title: 'Devotion'};
 export default async function Devotion({searchParams}: {searchParams: {listen?: string}}) {
   const sb = supabaseServer(); const t = await getT(); const locale = await getLocale();
+  const contentLocale = getContentLocale(locale);
   const {data: {user}} = await sb.auth.getUser(); const today = new Date().toISOString().slice(0, 10);
-  const {data: d} = await sb.from('devotions').select('*').eq('locale', locale).lte('day', today).order('day', {ascending: false}).limit(1).maybeSingle();
+  const {data: d} = await sb.from('devotions').select('*').eq('locale', contentLocale).lte('day', today).order('day', {ascending: false}).limit(1).maybeSingle();
   if (!d) return <div className="px-6 pt-14 text-sm text-mute">{t('home.empty')}</div>;
   return (<div className="px-6 pt-14">
     <div className="flex items-center justify-between"><span className="label">{t('home.devotion')}</span><ShareButton path="/devotion" title="Biblesyn" text={`"${d.verse_text}" ${d.verse_ref}`} /></div>

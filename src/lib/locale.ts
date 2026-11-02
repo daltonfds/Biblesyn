@@ -65,3 +65,7 @@ export function getReaderPrefs(): {f: string; s: number} {
   try { const j = JSON.parse(cookies().get('reader')?.value ?? '{}'); return {f: (FONTS as readonly string[]).includes(j.f) ? j.f : 'serif', s: Math.min(28, Math.max(15, Number(j.s) || 19))}; }
   catch { return {f: 'serif', s: 19}; }
 }
+
+export function getContentLocale(locale: string): string {
+  return locale === 'en-ZA' ? 'en' : locale;
+}
