@@ -10,7 +10,7 @@ import fr from '../../messages/fr.json';
 import es from '../../messages/es.json';
 import it from '../../messages/it.json';
 
-type MessageTree = Record<string, string | MessageTree>;
+interface MessageTree { [key: string]: string | MessageTree; }
 function isTree(value: unknown): value is MessageTree {
   return !!value && typeof value === 'object' && !Array.isArray(value);
 }
