@@ -7,8 +7,11 @@ export async function GET(req: Request) {
   const code = url.searchParams.get('code');
   const requestedNext = url.searchParams.get('next') || '/home';
   const next = requestedNext.startsWith('/') && !requestedNext.startsWith('//') ? requestedNext : '/home';
-  const response = NextResponse.redirect(new URL(next, url.origin));
   const cookieStore = cookies();
+
+  if (!code) {
+    return NextResponse.redirect(new URL('/login?auth_error=google_callback_failed', url.origin));
+  }
 
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -19,27 +22,21 @@ export async function GET(req: Request) {
           return cookieStore.getAll();
         },
         setAll(items: {name: string; value: string; options: CookieOptions}[]) {
-          items.forEach(({name, value, options}) => {
-            response.cookies.set(name, value, options);
-          });
+          // Route Handlers can write cookies directly. This ensures the PKCE
+          // exchange persists both auth cookies before the redirect is returned.
+          items.forEach(({name, value, options}) => cookieStore.set(name, value, options));
         },
       },
     },
   );
 
-  if (!code) {
-    return NextResponse.redirect(new URL('/login?auth_error=google_callback_failed', url.origin));
-  }
-
-  // exchangeCodeForSession returns the authenticated user directly.
-  // Do not call getUser() immediately afterwards: the cookie store still
-  // contains the incoming request cookies, while the new session cookies
-  // have only been attached to the redirect response.
   const {data: authData, error: exchangeError} = await supabase.auth.exchangeCodeForSession(code);
   const user = authData?.user;
 
-  if (exchangeError || !user) {
-    return NextResponse.redirect(new URL('/login?auth_error=google_callback_failed', url.origin));
+  if (exchangeError || !user || !authData.session) {
+    const failed = NextResponse.redirect(new URL('/login?auth_error=google_callback_failed', url.origin));
+    failed.headers.set('Cache-Control', 'no-store, max-age=0');
+    return failed;
   }
 
   const {data: profile} = await supabase
@@ -60,15 +57,17 @@ export async function GET(req: Request) {
     await supabase.from('profiles').update(updates).eq('id', user.id);
   }
 
-  if (profile?.locale) response.cookies.set('locale', profile.locale, opt);
-  if (profile?.country) response.cookies.set('country', profile.country, opt);
+  if (profile?.locale) cookieStore.set('locale', profile.locale, opt);
+  if (profile?.country) cookieStore.set('country', profile.country, opt);
   if (profile) {
-    response.cookies.set(
+    cookieStore.set(
       'reader',
       JSON.stringify({f: profile.font_family, s: profile.font_size}),
       opt,
     );
   }
 
+  const response = NextResponse.redirect(new URL(next, url.origin));
+  response.headers.set('Cache-Control', 'no-store, max-age=0');
   return response;
 }
