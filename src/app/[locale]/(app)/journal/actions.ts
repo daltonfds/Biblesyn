@@ -1,6 +1,7 @@
 'use server';
 import {revalidatePath} from 'next/cache';
-import {redirect} from '@/i18n/navigation';
+import {redirect} from 'next/navigation';
+import {cookies} from 'next/headers';
 import {supabaseServer} from '@/lib/supabase/server';
 export async function addEntry(fd: FormData) {
   const body = String(fd.get('body') ?? '').trim(); if (!body) return;
@@ -9,4 +10,4 @@ export async function addEntry(fd: FormData) {
 export async function deleteEntry(fd: FormData) { await supabaseServer().from('journal_entries').delete().eq('id', String(fd.get('id'))); revalidatePath('/journal'); }
 export async function addGoal(fd: FormData) { const body = String(fd.get('body') ?? '').trim(); if (!body) return; await supabaseServer().from('goals').insert({body}); revalidatePath('/journal'); }
 export async function toggleGoal(fd: FormData) { await supabaseServer().from('goals').update({done: fd.get('done') !== '1'}).eq('id', String(fd.get('id'))); revalidatePath('/journal'); }
-export async function signOut() { await supabaseServer().auth.signOut(); redirect('/'); }
+export async function signOut() { await supabaseServer().auth.signOut(); const locale = cookies().get('NEXT_LOCALE')?.value || 'en'; redirect('/' + locale); }

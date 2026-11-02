@@ -1,13 +1,19 @@
 'use server';
 import {revalidatePath} from 'next/cache';
-import {redirect} from '@/i18n/navigation';
+import {redirect} from 'next/navigation';
+import {cookies} from 'next/headers';
 import {requireStaff} from '@/lib/admin';
 import {supabaseAdmin} from '@/lib/supabase/admin';
 import {DEFAULTS} from '@/lib/i18n-defaults';
 const slugify = (s: string) => s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
 const str = (fd: FormData, k: string) => String(fd.get(k) ?? '').trim();
 const bool = (fd: FormData, k: string) => fd.get(k) === 'on';
-const back = (path: string, q: string) => redirect(`${path}${path.includes('?') ? '&' : '?'}${q}`);
+const redirectLocal = (path: string): never => {
+  const locale = cookies().get('NEXT_LOCALE')?.value || 'en';
+  const prefix = '/' + locale;
+  redirect(path === prefix || path.startsWith(prefix + '/') ? path : prefix + (path.startsWith('/') ? path : '/' + path));
+};
+const back = (path: string, q: string): never => redirectLocal(`${path}${path.includes('?') ? '&' : '?'}${q}`);
 // ---------- articles
 export async function saveArticle(fd: FormData) {
   await requireStaff(); const db = supabaseAdmin(); const group = str(fd, 'group'); const locale = str(fd, 'locale'); const base = `/admin/articles/${group}?lang=${locale}`;
@@ -19,7 +25,7 @@ export async function saveArticle(fd: FormData) {
   revalidatePath('/library'); revalidatePath('/'); back(base, 'saved=1');
 }
 export async function deleteArticle(fd: FormData) {
-  await requireStaff(); await supabaseAdmin().from('articles').delete().eq('group_id', str(fd, 'group')).eq('locale', str(fd, 'locale')); revalidatePath('/library'); redirect('/admin/articles');
+  await requireStaff(); await supabaseAdmin().from('articles').delete().eq('group_id', str(fd, 'group')).eq('locale', str(fd, 'locale')); revalidatePath('/library'); redirectLocal('/admin/articles');
 }
 // ---------- plans
 export async function savePlan(fd: FormData) {
@@ -28,7 +34,7 @@ export async function savePlan(fd: FormData) {
   const {error} = await db.from('study_plans').upsert({group_id: group, locale, title, slug, description: str(fd, 'description') || null, days: Number(str(fd, 'days')) || 7, sort: Number(str(fd, 'sort')) || 0, published: bool(fd, 'published')}, {onConflict: 'group_id,locale'});
   if (error) back(base, `err=${encodeURIComponent(error.message)}`); revalidatePath('/plans'); back(base, 'saved=1');
 }
-export async function deletePlan(fd: FormData) { await requireStaff(); await supabaseAdmin().from('study_plans').delete().eq('group_id', str(fd, 'group')).eq('locale', str(fd, 'locale')); revalidatePath('/plans'); redirect('/admin/plans'); }
+export async function deletePlan(fd: FormData) { await requireStaff(); await supabaseAdmin().from('study_plans').delete().eq('group_id', str(fd, 'group')).eq('locale', str(fd, 'locale')); revalidatePath('/plans'); redirectLocal('/admin/plans'); }
 export async function saveDay(fd: FormData) {
   await requireStaff(); const db = supabaseAdmin(); const base = `/admin/plans/${str(fd, 'group')}?lang=${str(fd, 'locale')}`;
   const {error} = await db.from('study_plan_days').upsert({plan_id: str(fd, 'plan_id'), day_number: Number(str(fd, 'day_number')), title: str(fd, 'title') || `Day ${str(fd, 'day_number')}`, passage: str(fd, 'passage') || null, body: str(fd, 'body') || null, reflection: str(fd, 'reflection') || null, prayer: str(fd, 'prayer') || null}, {onConflict: 'plan_id,day_number'});
