@@ -57,7 +57,7 @@ export default async function Visitors({searchParams}: {searchParams: {range?: s
   const pageRows = countBy(rows.filter(r => r.event_name === 'page_view'), r => r.page_path);
   const sources = countBy(rows, r => r.utm_source || r.referrer_host || 'Direct');
   const countries = countBy(rows, r => r.country || 'Unknown');
-  const cities = countBy(rows, r => [r.city, r.country].filter(Boolean).join(', ') || 'Unknown');
+  const cities = countBy(rows, r => [r.city,r.region,r.country].filter(Boolean).join(', ') || 'Unknown');
   const devices = countBy(rows, r => r.device_type || 'Unknown');
   const browsers = countBy(rows, r => r.browser || 'Unknown');
   const systems = countBy(rows, r => r.operating_system || 'Unknown');
@@ -76,6 +76,7 @@ export default async function Visitors({searchParams}: {searchParams: {range?: s
       <div><p className="label">Analytics</p><h1 className="mt-1 font-serif text-3xl font-bold">Visitors & traffic</h1><p className="mt-1 text-sm text-mute">Understand who visits Biblesyn, where they come from and what they read.</p></div>
       <div className="flex flex-wrap gap-1 rounded-full bg-mist p-1">{[['24h','24 hours'],['7d','7 days'],['30d','30 days'],['90d','90 days']].map(([key,label]) => <Link key={key} href={rangeLink(key)} className={`rounded-full px-3 py-2 text-xs font-semibold ${selected === key ? 'bg-ink text-white' : 'text-ink'}`}>{label}</Link>)}</div>
     </div>
+    <p className="mb-4 rounded-xl bg-mist px-4 py-3 text-xs leading-5 text-mute">Analytics include visitors who accept the optional analytics choice. Location is approximate. IP addresses and email addresses are not stored. Admin pages are excluded.</p>
     {error && <p className="mb-4 rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-700">Analytics could not be loaded: {error.message}</p>}
     <div className="mb-6 grid grid-cols-2 gap-3 md:grid-cols-4">
       <Metric label="Active visitors" value={active} note="Seen in the last 5 minutes" />
@@ -113,10 +114,10 @@ export default async function Visitors({searchParams}: {searchParams: {range?: s
     <section className="rounded-2xl border border-line p-4">
       <div className="mb-3 flex flex-wrap items-center justify-between gap-2"><div><h2 className="font-semibold">Recent visitor sessions</h2><p className="text-xs text-mute">Anonymous visitor IDs; no IP addresses or email addresses are stored.</p></div><span className="text-xs text-mute">Latest 20</span></div>
       <div className="overflow-x-auto"><table className="tbl min-w-[760px]"><thead><tr><th>Last seen</th><th>Visitor</th><th>Location</th><th>Device / browser</th><th>Last page</th><th>Pages</th><th>Account</th></tr></thead><tbody>
-        {recent.map((s, i) => { const r=s.latest; return <tr key={r.session_id}><td className="whitespace-nowrap">{fmt(r.created_at)}</td><td className="font-mono text-xs">{r.visitor_id.slice(0,8)}…</td><td>{[r.city,r.country].filter(Boolean).join(', ') || 'Unknown'}</td><td>{r.device_type || '—'}<div className="text-xs text-mute">{r.browser || '—'} · {r.operating_system || '—'}</div></td><td className="max-w-[190px] truncate" title={r.page_path}>{r.page_path}</td><td>{s.pages}</td><td>{r.user_id ? 'Member' : 'Guest'}</td></tr>; })}
-        {!recent.length && <tr><td colSpan={7} className="py-8 text-center text-mute">No visitor data yet. Visits will appear after the new tracking code is deployed and the database migration is active.</td></tr>}
+        {recent.map(s => { const r=s.latest; return <tr key={r.session_id}><td className="whitespace-nowrap">{fmt(r.created_at)}</td><td className="font-mono text-xs">{r.visitor_id.slice(0,8)}…</td><td>{[r.city,r.region,r.country].filter(Boolean).join(', ') || 'Unknown'}</td><td>{r.device_type || '—'}<div className="text-xs text-mute">{r.browser || '—'} · {r.operating_system || '—'}</div></td><td className="max-w-[190px] truncate" title={r.page_path}>{r.page_path}</td><td>{s.pages}</td><td>{r.user_id ? 'Member' : 'Guest'}</td></tr>; })}
+        {!recent.length && <tr><td colSpan={7} className="py-8 text-center text-mute">No visitor data yet. Visits will appear after the new tracking code is deployed and visitors accept analytics.</td></tr>}
       </tbody></table></div>
     </section>
-    <p className="mt-4 text-xs text-mute">Location is approximate and depends on the visitor’s network. Ad blockers, browser privacy settings and disabled JavaScript can reduce measured visits. Internal admin pages are excluded. {rows.length >= 25000 ? 'The displayed dataset is capped at 25,000 records for performance.' : ''}</p>
+    <p className="mt-4 text-xs text-mute">Location is approximate and depends on the visitor’s network. Ad blockers, browser privacy settings and disabled JavaScript can reduce measured visits. {rows.length >= 25000 ? 'The displayed dataset is capped at 25,000 records for performance.' : ''}</p>
   </div>;
 }
