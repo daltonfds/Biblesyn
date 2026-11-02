@@ -191,5 +191,16 @@
     "subscription_heading": "Benvenuto in Biblesyn Premium",
     "subscription_body": "Il tuo abbonamento è stato confermato. Ora puoi accedere alla biblioteca spirituale completa, ai piani di studio e all’assistente biblico.",
     "subscription_cta": "Apri Biblesyn"
+  },
+  "app": {
+    "title": "App Biblesyn",
+    "description": "Il tuo spazio personale per lo studio biblico e la crescita spirituale.",
+    "home": "Home",
+    "library": "Biblioteca",
+    "plans": "Piani di studio",
+    "assistant": "Assistente biblico",
+    "devotion": "Devozionale",
+    "journal": "Diario",
+    "settings": "Impostazioni"
   }
 }

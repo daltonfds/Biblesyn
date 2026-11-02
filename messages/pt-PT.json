@@ -191,5 +191,16 @@
     "subscription_heading": "Bem-vindo ao Biblesyn Premium",
     "subscription_body": "A sua subscrição foi confirmada. Já pode aceder à biblioteca espiritual completa, aos planos de estudo e ao Assistente Bíblico.",
     "subscription_cta": "Abrir Biblesyn"
+  },
+  "app": {
+    "title": "Aplicação Biblesyn",
+    "description": "O seu espaço pessoal de estudo bíblico e crescimento espiritual.",
+    "home": "Início",
+    "library": "Biblioteca",
+    "plans": "Planos de estudo",
+    "assistant": "Assistente Bíblico",
+    "devotion": "Devocional",
+    "journal": "Diário",
+    "settings": "Definições"
   }
 }

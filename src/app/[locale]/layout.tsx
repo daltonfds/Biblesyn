@@ -20,9 +20,9 @@ export async function generateMetadata({params}: {params: {locale: string}}): Pr
   const unlocalized = currentPath.replace(/^\/(en|en-ZA|pt-BR|pt-PT|fr|es|it)(?=\/|$)/, '') || '/';
   const suffix = unlocalized === '/' ? '' : unlocalized;
   const pageTitleKey: Record<string, string> = {
-    '/home': 'seo.home', '/library': 'lib.title', '/plans': 'plans.title',
-    '/assistant': 'asst.title', '/devotion': 'home.devotion',
-    '/journal': 'journal.title', '/settings': 'settings.title',
+    '/home': 'app.home', '/library': 'app.library', '/plans': 'app.plans',
+    '/assistant': 'app.assistant', '/devotion': 'app.devotion',
+    '/journal': 'app.journal', '/settings': 'app.settings',
   };
   const pageTitle = strings[pageTitleKey[unlocalized] || 'seo.title'] || strings['seo.title'] || 'Biblesyn';
   const languages: Record<string, string> = {};
