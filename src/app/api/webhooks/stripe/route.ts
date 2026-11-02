@@ -3,6 +3,10 @@ import {NextRequest, NextResponse} from 'next/server';
 import {supabaseAdmin} from '@/lib/supabase/admin';
 import {sendSubscriptionConfirmation} from '@/lib/email';
 
+function periodEnd(subscription: Stripe.Subscription): number {
+  const value = subscription as unknown as {current_period_end?: number; items?: {data?: Array<{current_period_end?: number}>}};
+  return value.current_period_end ?? value.items?.data?.[0]?.current_period_end ?? Math.floor(Date.now() / 1000);
+}
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
@@ -31,7 +35,7 @@ export async function POST(request: NextRequest) {
         user_id: userId, stripe_subscription_id: subscription.id, stripe_customer_id: customerId,
         status: subscription.status, currency: subscription.currency.toUpperCase(),
         amount_cents: session.amount_total ?? 0, country: session.metadata?.country ?? null,
-        current_period_end: new Date(subscription.current_period_end * 1000).toISOString(),
+        current_period_end: new Date(periodEnd(subscription) * 1000).toISOString(),
         cancel_at_period_end: subscription.cancel_at_period_end, updated_at: new Date().toISOString(),
       }, {onConflict: 'stripe_subscription_id'});
       if (error) return NextResponse.json({error: 'subscription_persist_failed'}, {status: 500});
