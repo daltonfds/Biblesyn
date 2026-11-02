@@ -66,7 +66,7 @@ export async function POST(request: NextRequest) {
     const subscription = event.data.object as Stripe.Subscription;
     const status = event.type === 'customer.subscription.deleted' ? 'canceled' : subscription.status;
     await db.from('subscriptions').update({
-      status, current_period_end: new Date(subscription.current_period_end * 1000).toISOString(),
+      status, current_period_end: new Date(periodEnd(subscription) * 1000).toISOString(),
       cancel_at_period_end: subscription.cancel_at_period_end, updated_at: new Date().toISOString(),
     }).eq('stripe_subscription_id', subscription.id);
     const userId = subscription.metadata?.user_id;
