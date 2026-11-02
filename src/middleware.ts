@@ -28,6 +28,7 @@ function acceptLanguageLocale(header: string | null): string | null {
     const exact = routing.locales.find(locale => locale.toLowerCase() === candidate.tag);
     if (exact) return exact;
     const language = candidate.tag.split('-')[0];
+    if (language === 'en') return 'en';
     const regional = routing.locales.find(locale => locale.toLowerCase().startsWith(language + '-'));
     if (regional) return regional;
     if (SUPPORTED.has(language)) return language;
