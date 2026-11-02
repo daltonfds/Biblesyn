@@ -61,7 +61,7 @@ export default async function LocaleLayout({
           <I18nProvider strings={strings} locale={locale}>{children}</I18nProvider>
         </NextIntlClientProvider>
         <Suspense fallback={null}><VisitorTracker /></Suspense>
-        <footer className="mx-auto max-w-6xl px-4 py-5 text-center text-xs text-mute">© Biblesyn · Entenda a Palavra. Fortaleça seu Espírito.</footer>
+        <footer className="mx-auto flex max-w-6xl flex-col items-center gap-3 px-4 py-5 text-center text-xs text-mute"><LocaleSwitcher /><span>© Biblesyn · Entenda a Palavra. Fortaleça seu Espírito.</span></footer>
       </body>
     </html>
   );

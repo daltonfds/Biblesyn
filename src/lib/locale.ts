@@ -17,13 +17,35 @@ function supportedLocale(value?: string | null): string | null {
   if (normalized === 'pt') return 'pt-BR';
   return (SUPPORTED_LOCALES as readonly string[]).find(code => code.toLowerCase() === normalized.toLowerCase()) ?? null;
 }
+const LOCALE_OPTIONS = [
+  {code: 'en', name: 'English', native_name: 'English', is_default: true},
+  {code: 'en-ZA', name: 'English (South Africa)', native_name: 'English (South Africa)', is_default: false},
+  {code: 'pt-BR', name: 'Portuguese (Brazil)', native_name: 'Português (Brasil)', is_default: false},
+  {code: 'pt-PT', name: 'Portuguese (Portugal)', native_name: 'Português (Portugal)', is_default: false},
+  {code: 'fr', name: 'French', native_name: 'Français', is_default: false},
+  {code: 'es', name: 'Spanish', native_name: 'Español', is_default: false},
+  {code: 'it', name: 'Italian', native_name: 'Italiano', is_default: false},
+] as const;
+
 export const getLanguages = cache(async () => {
   const {data} = await supabaseServer().from('languages').select('code,name,native_name,is_default').eq('active', true).order('sort');
-  return (data ?? []) as {code: string; name: string; native_name: string | null; is_default: boolean}[];
+  const stored = new Map((data ?? []).map((row: any) => [row.code, row]));
+  return LOCALE_OPTIONS.map(option => ({...option, ...(stored.get(option.code) ?? {})}));
 });
 export const getCountries = cache(async () => {
   const {data} = await supabaseServer().from('countries').select('code,name,default_locale').eq('active', true).order('name');
-  return (data ?? []) as {code: string; name: string; default_locale: string | null}[];
+  const fallback = [
+    ['BR','Brazil','pt-BR'],['PT','Portugal','pt-PT'],['AO','Angola','pt-PT'],['MZ','Mozambique','pt-PT'],['CV','Cape Verde','pt-PT'],
+    ['FR','France','fr'],['BE','Belgium','fr'],['CH','Switzerland','fr'],['LU','Luxembourg','fr'],
+    ['ES','Spain','es'],['MX','Mexico','es'],['AR','Argentina','es'],['CO','Colombia','es'],['CL','Chile','es'],['PE','Peru','es'],
+    ['IT','Italy','it'],['SM','San Marino','it'],['VA','Vatican City','it'],
+    ['ZA','South Africa','en-ZA'],['US','United States','en'],['GB','United Kingdom','en'],['CA','Canada','en'],['AU','Australia','en'],
+  ];
+  const stored = new Map((data ?? []).map((row: any) => [row.code, row]));
+  const merged = new Map<string, {code: string; name: string; default_locale: string | null}>();
+  for (const [code,name,default_locale] of fallback) merged.set(code, {code,name,default_locale});
+  for (const row of data ?? []) merged.set(row.code, row);
+  return [...merged.values()].sort((a,b) => a.name.localeCompare(b.name));
 });
 export const getLocale = cache(async (): Promise<string> => {
   const manual = supportedLocale(cookies().get('NEXT_LOCALE')?.value || cookies().get('locale')?.value);

@@ -13,7 +13,7 @@ const CATALOGS: Record<string, Record<string, string>> = {
   en, 'en-ZA': {...en, ...enZA}, 'pt-BR': ptBR, 'pt-PT': ptPT, fr, es, it,
 };
 export const fmt = (s: string, v?: Record<string, string | number>) =>
-  s.replace(/\\{(\\w+)\\}/g, (_, k) => String(v?.[k] ?? ''));
+  s.replace(/\{(\w+)\}/g, (_, k) => String(v?.[k] ?? ''));
 
 export const getStrings = cache(async (locale: string) => {
   const o: Record<string, string> = {...DEFAULTS, ...(CATALOGS[locale] || en)};
