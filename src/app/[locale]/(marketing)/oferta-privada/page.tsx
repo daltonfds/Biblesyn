@@ -1,5 +1,6 @@
 import CheckoutButton from "@/components/CheckoutButton";
 import {redirect} from "next/navigation";
+import {getCountry} from "@/lib/locale";
 import { PRICE, BONUSES, TEASERS, FAQ } from "@/lib/offer";
 
 const Acc = ({ items }: { items: { q: string; a: string }[] }) => (
@@ -15,7 +16,7 @@ export async function generateMetadata({params}: {params: {locale: string}}) {
 }
 
 export default function Page({params}: {params: {locale: string}}) {
-  if (params.locale !== "pt-BR") redirect(`/${params.locale}/premium`);
+  if (params.locale !== "pt-BR" || getCountry() !== "BR") redirect(`/${params.locale}/premium`);
   return (
     <main className="bs">
       <div className="top">OFERTA DE LANÇAMENTO NO BRASIL · POR TEMPO LIMITADO</div>
