@@ -12,7 +12,7 @@ export default function AuthForm({mode, countries, languages, defaultCountry, de
   const t = useT(); const router = useRouter();
   const [email, setEmail] = useState(''); const [password, setPassword] = useState(''); const [msg, setMsg] = useState(''); const [busy, setBusy] = useState(false);
   const [country, setCountry] = useState(countries.some(c => c.code === defaultCountry) ? defaultCountry : countries[0]?.code ?? ''); const [locale, setLocale] = useState(defaultLocale);
-  const next = () => { const n = typeof window === 'undefined' ? '/' : new URLSearchParams(window.location.search).get('next') || '/'; return n.startsWith('/') && !n.startsWith('//') ? n : '/'; };
+  const next = () => { const n = typeof window === 'undefined' ? '/' : new URLSearchParams(window.location.search).get('next') || '/home'; return n.startsWith('/') && !n.startsWith('//') ? n : '/home'; };
   const post = (b: object) => fetch('/api/prefs', {method: 'POST', headers: {'content-type': 'application/json'}, body: JSON.stringify(b)});
   function pickCountry(code: string) { setCountry(code); const l = countries.find(c => c.code === code)?.default_locale; if (l && languages.some(x => x.code === l)) pickLocale(l); }
   function pickLocale(l: string) { setLocale(l); setCookie('locale', l); router.refresh(); }
