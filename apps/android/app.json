@@ -14,12 +14,6 @@
         "INTERNET",
         "VIBRATE"
       ]
-    },
-    "extra": {
-      "eas": {
-        "projectId": "CONFIGURE_EAS_PROJECT_ID"
-      }
-    },
-    "icon": "./assets/icon.png"
+    }
   }
 }
