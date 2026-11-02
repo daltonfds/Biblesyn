@@ -1,4 +1,3 @@
-import "../biblesyn.css";
 import CheckoutButton from "@/components/CheckoutButton";
 import { PRICE, BONUSES, TEASERS, FAQ } from "@/lib/offer";
 
