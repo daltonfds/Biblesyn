@@ -1,5 +1,5 @@
 'use client';
-import {useState} from 'react';
+import {useEffect, useState} from 'react';
 import Link from 'next/link';
 import {useRouter} from 'next/navigation';
 import {X, Mail, Lock, Globe, Languages} from 'lucide-react';
@@ -10,6 +10,11 @@ type Country = {code: string; name: string; default_locale: string | null}; type
 const setCookie = (k: string, v: string) => { document.cookie = `${k}=${encodeURIComponent(v)};path=/;max-age=31536000;samesite=lax`; };
 export default function AuthForm({mode, countries, languages, defaultCountry, defaultLocale}: {mode: 'login' | 'signup'; countries: Country[]; languages: Lang[]; defaultCountry: string; defaultLocale: string}) {
   const t = useT(); const router = useRouter();
+  useEffect(() => {
+    if (new URLSearchParams(window.location.search).get('auth_error') === 'google_callback_failed') {
+      setMsg('Não foi possível concluir o acesso com Google. Tente novamente.');
+    }
+  }, []);
   const [email, setEmail] = useState(''); const [password, setPassword] = useState(''); const [msg, setMsg] = useState(''); const [busy, setBusy] = useState(false);
   const [country, setCountry] = useState(countries.some(c => c.code === defaultCountry) ? defaultCountry : countries[0]?.code ?? ''); const [locale, setLocale] = useState(defaultLocale);
   const next = () => { const n = typeof window === 'undefined' ? '/home' : new URLSearchParams(window.location.search).get('next') || '/home'; return n.startsWith('/') && !n.startsWith('//') ? n : '/home'; };
