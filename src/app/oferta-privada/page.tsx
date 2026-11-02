@@ -8,7 +8,12 @@ const Acc = ({ items }: { items: { q: string; a: string }[] }) => (
   ))}</>
 );
 
-export const metadata = {\n  title: "Biblesyn — Oferta",\n  robots: { index: false, follow: false },\n};\n\nexport default function Page() {
+export const metadata = {
+  title: "Biblesyn — Oferta",
+  robots: { index: false, follow: false },
+};
+
+export default function Page() {
   return (
     <main className="bs">
       <div className="top">OFERTA DE LANÇAMENTO NO BRASIL · POR TEMPO LIMITADO</div>
