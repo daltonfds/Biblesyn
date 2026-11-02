@@ -14,7 +14,8 @@ export async function generateMetadata({params}: {params: {locale: string}}) {
   return {title: strings['seo.offer'], description: strings['seo.description'], robots: {index: false, follow: false}};
 }
 
-export default function Page({params}: {params: {locale: string}}) {\n  if (params.locale !== "pt-BR") redirect(`/${params.locale}/premium`);
+export default function Page({params}: {params: {locale: string}}) {
+  if (params.locale !== "pt-BR") redirect(`/${params.locale}/premium`);
   return (
     <main className="bs">
       <div className="top">OFERTA DE LANÇAMENTO NO BRASIL · POR TEMPO LIMITADO</div>
