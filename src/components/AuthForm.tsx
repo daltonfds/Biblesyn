@@ -12,7 +12,7 @@ export default function AuthForm({mode, countries, languages, defaultCountry, de
   const t = useT(); const router = useRouter();
   const [email, setEmail] = useState(''); const [password, setPassword] = useState(''); const [msg, setMsg] = useState(''); const [busy, setBusy] = useState(false);
   const [country, setCountry] = useState(countries.some(c => c.code === defaultCountry) ? defaultCountry : countries[0]?.code ?? ''); const [locale, setLocale] = useState(defaultLocale);
-  const next = () => { const n = typeof window === 'undefined' ? '/' : new URLSearchParams(window.location.search).get('next') || '/home'; return n.startsWith('/') && !n.startsWith('//') ? n : '/home'; };
+  const next = () => { const n = typeof window === 'undefined' ? '/home' : new URLSearchParams(window.location.search).get('next') || '/home'; return n.startsWith('/') && !n.startsWith('//') ? n : '/home'; };
   const post = (b: object) => fetch('/api/prefs', {method: 'POST', headers: {'content-type': 'application/json'}, body: JSON.stringify(b)});
   function pickCountry(code: string) { setCountry(code); const l = countries.find(c => c.code === code)?.default_locale; if (l && languages.some(x => x.code === l)) pickLocale(l); }
   function pickLocale(l: string) { setLocale(l); setCookie('locale', l); router.refresh(); }
@@ -47,7 +47,7 @@ export default function AuthForm({mode, countries, languages, defaultCountry, de
     </form>
     {msg && <p role="alert" className="mt-3 text-sm text-red-600">{msg}</p>}
     <div className="my-5 flex items-center gap-3 text-xs text-mute"><span className="h-px flex-1 bg-line" />{t('auth.or')}<span className="h-px flex-1 bg-line" /></div>
-    <GoogleButton next={typeof window === 'undefined' ? '/' : next()} before={mode === 'signup' ? remember : undefined} />
+    <GoogleButton next={next()} before={mode === 'signup' ? remember : undefined} />
     <p className="mt-7 text-center text-sm text-mute">{mode === 'signup' ? <>{t('auth.have_account')} <Link className="font-semibold text-ink" href="/login">{t('common.login')}</Link></> : <>{t('auth.new_here')} <Link className="font-semibold text-ink" href="/signup">{t('auth.create_link')}</Link></>}</p>
     <p className="mt-3 text-center"><Link className="text-sm text-mute underline" href="/">{t('auth.guest')}</Link></p>
   </div>);
