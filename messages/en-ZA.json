@@ -1,5 +1,7 @@
 {
   "auth.create_sub": "Save your progress, journal and favourites.",
   "journal.saved_empty": "Saved articles will appear here.",
-  "premium.secure": "Secure payment with Stripe. Renews monthly until cancelled."
+  "premium.secure": "Secure payment with Stripe. Renews monthly until cancelled.",
+  "seo.title": "Biblesyn — Understand the Word. Strengthen Your Spirit.",
+  "seo.description": "Biblical understanding, daily devotionals and study plans to strengthen your spiritual journey."
 }

@@ -6,7 +6,11 @@ import {getBillingPrice} from '@/lib/offer';
 import SubscriptionButton from '@/components/SubscriptionButton';
 import {supabaseServer} from '@/lib/supabase/server';
 
-export const metadata = {title: 'Premium'};
+export async function generateMetadata({params}: {params: {locale: string}}) {
+  const {getStrings} = await import('@/lib/i18n');
+  const strings = await getStrings(params.locale);
+  return {title: strings['seo.premium'], description: strings['seo.description']};
+}
 const FEATURES = [[Library, 'premium.f1'], [Sparkles, 'premium.f2'], [CalendarCheck, 'premium.f3'], [Headphones, 'premium.f4'], [NotebookPen, 'premium.f5']] as const;
 
 export default async function Premium() {

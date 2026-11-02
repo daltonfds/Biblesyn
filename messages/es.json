@@ -136,5 +136,12 @@
   "settings.manage_sub": "Gestionar suscripción",
   "settings.sample": "Aa",
   "account.suspended": "Tu cuenta está suspendida.",
-  "account.logout": "Cerrar sesión"
+  "account.logout": "Cerrar sesión",
+  "seo.title": "Biblesyn — Comprende la Palabra. Fortalece tu espíritu.",
+  "seo.description": "Estudio bíblico, devocionales diarios y planes para fortalecer tu camino espiritual.",
+  "seo.home": "Inicio",
+  "seo.offer": "Oferta especial",
+  "seo.premium": "Premium",
+  "seo.login": "Iniciar sesión",
+  "seo.signup": "Crear cuenta"
 }

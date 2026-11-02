@@ -136,5 +136,12 @@
   "settings.manage_sub": "Gerenciar assinatura",
   "settings.sample": "Aa",
   "account.suspended": "Sua conta está suspensa.",
-  "account.logout": "Sair"
+  "account.logout": "Sair",
+  "seo.title": "Biblesyn — Entenda a Palavra. Fortaleça seu Espírito.",
+  "seo.description": "Estudo bíblico, devocionais diários e planos de leitura para fortalecer sua caminhada espiritual.",
+  "seo.home": "Início",
+  "seo.offer": "Oferta especial",
+  "seo.premium": "Premium",
+  "seo.login": "Entrar",
+  "seo.signup": "Criar conta"
 }

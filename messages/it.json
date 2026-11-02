@@ -136,5 +136,12 @@
   "settings.manage_sub": "Gestisci abbonamento",
   "settings.sample": "Aa",
   "account.suspended": "Il tuo account è sospeso.",
-  "account.logout": "Esci"
+  "account.logout": "Esci",
+  "seo.title": "Biblesyn — Comprendi la Parola. Rafforza il tuo spirito.",
+  "seo.description": "Studio biblico, devozionali quotidiani e piani per rafforzare il tuo cammino spirituale.",
+  "seo.home": "Home",
+  "seo.offer": "Offerta speciale",
+  "seo.premium": "Premium",
+  "seo.login": "Accedi",
+  "seo.signup": "Crea account"
 }

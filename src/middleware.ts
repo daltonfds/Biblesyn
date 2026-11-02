@@ -54,6 +54,9 @@ export async function middleware(req: NextRequest) {
     return NextResponse.redirect(target);
   }
 
+  // Pass the original localized pathname to the locale layout for canonical and hreflang metadata.
+  req.headers.set('x-biblesyn-path', pathname);
+
   // next-intl handles localePrefix=always and writes NEXT_LOCALE when the user
   // changes locale. Seed its request cookie from the deterministic detector.
   if (!req.cookies.get('NEXT_LOCALE')) req.cookies.set('NEXT_LOCALE', locale);
