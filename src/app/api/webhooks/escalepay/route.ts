@@ -1,6 +1,7 @@
 import {createHash, timingSafeEqual} from 'node:crypto';
 import {NextRequest, NextResponse} from 'next/server';
 import {supabaseAdmin} from '@/lib/supabase/admin';
+import {sendSubscriptionConfirmation} from '@/lib/email';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -161,6 +162,10 @@ export async function POST(request: NextRequest) {
   }
 
   const result = asObject(data);
+  if (result.status === 'processed' && email) {
+    const {data: profile} = await db.from('profiles').select('locale').eq('email', email).maybeSingle();
+    await sendSubscriptionConfirmation(email, profile?.locale);
+  }
   return json({
     ok: true,
     received: true,

@@ -1,4 +1,5 @@
 import CheckoutButton from "@/components/CheckoutButton";
+import {redirect} from "next/navigation";
 import { PRICE, BONUSES, TEASERS, FAQ } from "@/lib/offer";
 
 const Acc = ({ items }: { items: { q: string; a: string }[] }) => (
@@ -12,7 +13,7 @@ export const metadata = {
   robots: { index: false, follow: false },
 };
 
-export default function Page() {
+export default function Page({params}: {params: {locale: string}}) {\n  if (params.locale !== "pt-BR") redirect(`/${params.locale}/premium`);
   return (
     <main className="bs">
       <div className="top">OFERTA DE LANÇAMENTO NO BRASIL · POR TEMPO LIMITADO</div>
