@@ -2,7 +2,7 @@ import Link from 'next/link';
 import {Check, Library, Sparkles, CalendarCheck, Headphones, NotebookPen} from 'lucide-react';
 import {getT} from '@/lib/i18n';
 import {getLocale, getCountry} from '@/lib/locale';
-import {getBillingPrice} from '@/lib/offer';
+import {getBillingPrice} from '@/lib/billing';
 import SubscriptionButton from '@/components/SubscriptionButton';
 import {supabaseServer} from '@/lib/supabase/server';
 

@@ -1,7 +1,7 @@
 import {NextResponse} from 'next/server';
 import Stripe from 'stripe';
 import {supabaseServer} from '@/lib/supabase/server';
-import {getBillingPrice} from '@/lib/offer';
+import {getBillingPrice} from '@/lib/billing';
 import {getCountry} from '@/lib/locale';
 import {routing} from '@/i18n/routing';
 
