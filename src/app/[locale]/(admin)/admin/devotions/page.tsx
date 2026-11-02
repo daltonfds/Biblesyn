@@ -1,7 +1,7 @@
 import {supabaseAdmin} from '@/lib/supabase/admin';
 import {requireStaff} from '@/lib/admin';
 import LangTabs from '@/components/LangTabs';
-import Link from 'next/link';
+import {Link} from '@/i18n/navigation';
 import {saveDevotion, deleteDevotion} from '../actions';
 export default async function Devotions({searchParams}: {searchParams: {lang?: string; day?: string; saved?: string; err?: string}}) {
   await requireStaff(); const db = supabaseAdmin(); const {data: langs} = await db.from('languages').select('code,name').eq('active', true).order('sort');

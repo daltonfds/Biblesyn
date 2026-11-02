@@ -1,5 +1,5 @@
 import {notFound} from 'next/navigation';
-import Link from 'next/link';
+import {Link} from '@/i18n/navigation';
 import {supabaseAdmin} from '@/lib/supabase/admin';
 import {requireStaff, money} from '@/lib/admin';
 import {userAction} from '../../actions';

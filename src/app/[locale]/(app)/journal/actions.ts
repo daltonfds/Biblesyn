@@ -1,6 +1,6 @@
 'use server';
 import {revalidatePath} from 'next/cache';
-import {redirect} from 'next/navigation';
+import {redirect} from '@/i18n/navigation';
 import {supabaseServer} from '@/lib/supabase/server';
 export async function addEntry(fd: FormData) {
   const body = String(fd.get('body') ?? '').trim(); if (!body) return;

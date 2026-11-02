@@ -1,4 +1,4 @@
-import Link from 'next/link';
+import {Link} from '@/i18n/navigation';
 import AdminNav from '@/components/AdminNav';
 import {requireStaff} from '@/lib/admin';
 export const metadata = {title: 'Admin', robots: {index: false, follow: false}};

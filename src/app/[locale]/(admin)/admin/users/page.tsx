@@ -1,4 +1,4 @@
-import Link from 'next/link';
+import {Link} from '@/i18n/navigation';
 import {supabaseAdmin} from '@/lib/supabase/admin';
 import {requireStaff} from '@/lib/admin';
 const PAGE = 25;

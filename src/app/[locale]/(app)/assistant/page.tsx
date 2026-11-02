@@ -1,6 +1,6 @@
 'use client';
 import {useRef, useEffect, useState} from 'react';
-import Link from 'next/link';
+import {Link} from '@/i18n/navigation';
 import {ArrowUp, Sparkles} from 'lucide-react';
 import {useT} from '@/components/I18nProvider';
 type M = {role: 'user' | 'assistant'; content: string};

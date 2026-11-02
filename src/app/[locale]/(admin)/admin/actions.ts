@@ -1,6 +1,6 @@
 'use server';
 import {revalidatePath} from 'next/cache';
-import {redirect} from 'next/navigation';
+import {redirect} from '@/i18n/navigation';
 import {requireStaff} from '@/lib/admin';
 import {supabaseAdmin} from '@/lib/supabase/admin';
 import {DEFAULTS} from '@/lib/i18n-defaults';

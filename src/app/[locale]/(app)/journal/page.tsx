@@ -1,4 +1,4 @@
-import Link from 'next/link';
+import {Link} from '@/i18n/navigation';
 import {Plus, LogOut, Trash2, Circle, CheckCircle2, Settings} from 'lucide-react';
 import {supabaseServer} from '@/lib/supabase/server';
 import {getT} from '@/lib/i18n';
