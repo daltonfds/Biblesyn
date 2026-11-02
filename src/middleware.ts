@@ -10,6 +10,10 @@ const COUNTRY_LOCALE: Record<string, string> = {
 const SUPPORTED_LOCALES = new Set(['en', 'pt', 'fr', 'es']);
 
 export async function middleware(req: NextRequest) {
+  // Keep the OAuth callback isolated: its Route Handler must consume the PKCE
+  // verifier and write the new session cookies without an earlier auth refresh.
+  if (req.nextUrl.pathname === '/auth/callback') return NextResponse.next();
+
   let res = NextResponse.next({request: req});
   const sb = createServerClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!, {
     cookies: {getAll: () => req.cookies.getAll(), setAll(list: {name: string; value: string; options?: any}[]) {
