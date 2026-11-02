@@ -54,16 +54,17 @@ export async function middleware(req: NextRequest) {
     return NextResponse.redirect(target);
   }
 
-  // Pass the original localized pathname to the locale layout for canonical and hreflang metadata.
   req.headers.set('x-biblesyn-path', pathname);
-
-  // next-intl handles localePrefix=always and writes NEXT_LOCALE when the user
-  // changes locale. Seed its request cookie from the deterministic detector.
   if (!req.cookies.get('NEXT_LOCALE')) req.cookies.set('NEXT_LOCALE', locale);
-  const intlResponse = handleI18nRouting(req);\n  const detectedCountry = req.headers.get('x-vercel-ip-country')?.toUpperCase();\n  if (detectedCountry && !req.cookies.get('country')) {\n    intlResponse.cookies.set('country', detectedCountry, {path: '/', maxAge: 31536000, sameSite: 'lax'});\n  }
 
-  // Keep the existing Supabase session refresh and admin/journal protection.
-  // The localized OAuth callback must exchange the PKCE code in its Route Handler.
+  const intlResponse = handleI18nRouting(req);
+  const cookieOptions = {path: '/', maxAge: 31536000, sameSite: 'lax' as const};
+  intlResponse.cookies.set('NEXT_LOCALE', locale, cookieOptions);
+  const detectedCountry = req.headers.get('x-vercel-ip-country')?.toUpperCase();
+  if (detectedCountry && !req.cookies.get('country')) {
+    intlResponse.cookies.set('country', detectedCountry, cookieOptions);
+  }
+
   if (/^\/[a-zA-Z-]+\/auth\/callback(?:\/|$)/.test(pathname)) return intlResponse;
 
   let authResponse = NextResponse.next({request: req});
@@ -83,7 +84,7 @@ export async function middleware(req: NextRequest) {
   );
   const {data: {user}} = await supabase.auth.getUser();
   const localizedPath = pathname.replace(/^\/[a-zA-Z-]+(?=\/|$)/, '') || '/';
-  if (!user && (/^\/(journal)(?:\/|$)/.test(localizedPath) || /^\/admin(?:\/|$)/.test(localizedPath))) {
+  if (!user && (/^\/journal(?:\/|$)/.test(localizedPath) || /^\/admin(?:\/|$)/.test(localizedPath))) {
     const target = req.nextUrl.clone();
     target.pathname = '/' + locale + '/login';
     target.searchParams.set('next', pathname + req.nextUrl.search);
