@@ -16,7 +16,7 @@ export default function AuthForm({mode, countries, languages, defaultCountry, de
   }, []);
   const [email, setEmail] = useState(''); const [password, setPassword] = useState(''); const [msg, setMsg] = useState(''); const [busy, setBusy] = useState(false);
   const [country, setCountry] = useState(countries.some(c => c.code === defaultCountry) ? defaultCountry : countries[0]?.code ?? ''); const [locale, setLocale] = useState(defaultLocale);
-  const next = () => { const fallback = `/${locale}/home`; const n = typeof window === 'undefined' ? fallback : new URLSearchParams(window.location.search).get('next') || fallback; if (!n.startsWith('/') || n.startsWith('//')) return fallback; return n.startsWith(`/${locale}/`) ? n : `/${locale}${n}`; };
+  const next = () => { const raw = typeof window === 'undefined' ? '/home' : new URLSearchParams(window.location.search).get('next') || '/home'; if (!raw.startsWith('/') || raw.startsWith('//')) return '/home'; return raw.startsWith(`/${locale}/`) ? raw.slice(locale.length + 1) : raw; };
   const post = (b: object) => fetch('/api/prefs', {method: 'POST', headers: {'content-type': 'application/json'}, body: JSON.stringify(b)});
   function pickCountry(code: string) { setCountry(code); const l = countries.find(c => c.code === code)?.default_locale; if (l && languages.some(x => x.code === l)) pickLocale(l); }
   function pickLocale(l: string) { setLocale(l); setCookie('locale', l); router.refresh(); }
@@ -25,7 +25,7 @@ export default function AuthForm({mode, countries, languages, defaultCountry, de
     e.preventDefault(); setBusy(true); setMsg(''); const sb = supabaseBrowser();
     if (mode === 'signup') {
       remember();
-      const {data, error} = await sb.auth.signUp({email, password, options: {data: {country, locale}, emailRedirectTo: `${window.location.origin}/${locale}/auth/callback?next=${encodeURIComponent(next())}`}});
+      const {data, error} = await sb.auth.signUp({email, password, options: {data: {country, locale}, emailRedirectTo: `${window.location.origin}/${locale}/auth/callback?next=${encodeURIComponent(`/${locale}${next()}`)}`}});
       if (error) setMsg(error.message); else if (data.session) { await post({country, locale}); router.push(next() as never); router.refresh(); } else setMsg(t('auth.check_email'));
     } else {
       const {error} = await sb.auth.signInWithPassword({email, password});
@@ -35,7 +35,7 @@ export default function AuthForm({mode, countries, languages, defaultCountry, de
   }
   const icon = 'pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-mute';
   return (<div className="mx-auto max-w-md px-6 pt-11">
-    <Link href={`/${locale}`} aria-label={t('common.close')} className="flex h-10 w-10 items-center justify-center rounded-full bg-mist"><X size={20} /></Link>
+    <Link href="/" aria-label={t('common.close')} className="flex h-10 w-10 items-center justify-center rounded-full bg-mist"><X size={20} /></Link>
     <div className="mt-8 font-serif text-sm font-bold tracking-[.2em] text-leaf">BIBLESYN</div>
     <h1 className="mb-1 mt-2 font-serif text-[38px] font-bold leading-tight">{mode === 'signup' ? t('auth.create_title') : t('auth.welcome_back')}</h1>
     <p className="mb-7 text-[15px] text-mute">{mode === 'signup' ? t('auth.create_sub') : t('auth.tagline')}</p>
@@ -52,7 +52,7 @@ export default function AuthForm({mode, countries, languages, defaultCountry, de
     {msg && <p role="alert" className="mt-3 text-sm text-red-600">{msg}</p>}
     <div className="my-5 flex items-center gap-3 text-xs text-mute"><span className="h-px flex-1 bg-line" />{t('auth.or')}<span className="h-px flex-1 bg-line" /></div>
     <GoogleButton next={next()} before={mode === 'signup' ? remember : undefined} />
-    <p className="mt-7 text-center text-sm text-mute">{mode === 'signup' ? <>{t('auth.have_account')} <Link className="font-semibold text-ink" href={`/${locale}/login`}>{t('common.login')}</Link></> : <>{t('auth.new_here')} <Link className="font-semibold text-ink" href={`/${locale}/signup`}>{t('auth.create_link')}</Link></>}</p>
+    <p className="mt-7 text-center text-sm text-mute">{mode === 'signup' ? <>{t('auth.have_account')} <Link className="font-semibold text-ink" href="/login">{t('common.login')}</Link></> : <>{t('auth.new_here')} <Link className="font-semibold text-ink" href="/signup">{t('auth.create_link')}</Link></>}</p>
     <p className="mt-3 text-center"><Link className="text-sm text-mute underline" href="/">{t('auth.guest')}</Link></p>
   </div>);
 }
