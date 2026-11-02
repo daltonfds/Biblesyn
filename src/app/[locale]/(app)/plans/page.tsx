@@ -4,7 +4,6 @@ import {supabaseServer} from '@/lib/supabase/server';
 import {getLocale, getContentLocale} from '@/lib/locale';
 import {getT} from '@/lib/i18n';
 import {getStreak, getContinuePlan} from '@/lib/progress';
-export const metadata = {title: 'Plans'};
 export default async function Plans() {
   const sb = supabaseServer(); const t = await getT(); const locale = await getLocale(); const contentLocale = getContentLocale(locale);
   const {data: {user}} = await sb.auth.getUser();

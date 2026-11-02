@@ -8,6 +8,12 @@ import Gate from '@/components/Gate';
 import ShareButton from '@/components/ShareButton';
 import {FONT_CSS} from '@/components/ReaderSettings';
 import {completeDay} from './actions';
+export async function generateMetadata({params}: {params: {slug: string}}) {
+  const locale = getContentLocale(await getLocale());
+  const {data: plan} = await supabaseServer().from('study_plans').select('title,description')
+    .eq('slug', params.slug).eq('locale', locale).maybeSingle();
+  return plan ? {title: plan.title, description: plan.description ?? undefined} : {};
+}
 export default async function Plan({params}: {params: {slug: string}}) {
   const sb = supabaseServer(); const t = await getT(); const locale = await getLocale(); const contentLocale = getContentLocale(locale); const prefs = getReaderPrefs();
   const {data: plan} = await sb.from('study_plans').select('*').eq('slug', params.slug).eq('locale', contentLocale).maybeSingle();

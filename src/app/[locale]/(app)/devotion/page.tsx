@@ -3,7 +3,6 @@ import {getLocale, getContentLocale} from '@/lib/locale';
 import {getT} from '@/lib/i18n';
 import ShareButton from '@/components/ShareButton';
 import Gate from '@/components/Gate';
-export const metadata = {title: 'Devotion'};
 export default async function Devotion({searchParams}: {searchParams: {listen?: string}}) {
   const sb = supabaseServer(); const t = await getT(); const locale = await getLocale();
   const contentLocale = getContentLocale(locale);

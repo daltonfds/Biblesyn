@@ -3,7 +3,6 @@ import {Search, Play} from 'lucide-react';
 import {supabaseServer} from '@/lib/supabase/server';
 import {getLocale, getContentLocale} from '@/lib/locale';
 import {getT} from '@/lib/i18n';
-export const metadata = {title: 'Library'};
 export default async function Library({searchParams}: {searchParams: {topic?: string; q?: string}}) {
   const sb = supabaseServer(); const t = await getT(); const locale = await getLocale();
   const contentLocale = getContentLocale(locale);
