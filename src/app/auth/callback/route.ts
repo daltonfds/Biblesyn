@@ -28,7 +28,7 @@ export async function GET(req: Request) {
   );
 
   if (!code) {
-    return NextResponse.redirect(new URL('/?auth_error=missing_code', url.origin));
+    return NextResponse.redirect(new URL('/login?auth_error=google_callback_failed', url.origin));
   }
 
   // exchangeCodeForSession returns the authenticated user directly.
@@ -39,7 +39,7 @@ export async function GET(req: Request) {
   const user = authData?.user;
 
   if (exchangeError || !user) {
-    return NextResponse.redirect(new URL('/?auth_error=google_callback_failed', url.origin));
+    return NextResponse.redirect(new URL('/login?auth_error=google_callback_failed', url.origin));
   }
 
   const {data: profile} = await supabase
