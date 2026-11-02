@@ -10,23 +10,16 @@
     "android": {
       "package": "online.blui.biblesyn",
       "versionCode": 1,
-      "adaptiveIcon": {
-        "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#FFFFFF"
-      },
-      "permissions": ["INTERNET", "VIBRATE"]
+      "permissions": [
+        "INTERNET",
+        "VIBRATE"
+      ]
     },
-    "plugins": [
-      ["expo-build-properties", {
-        "android": {
-          "usesCleartextTraffic": false
-        }
-      }]
-    ],
     "extra": {
       "eas": {
         "projectId": "CONFIGURE_EAS_PROJECT_ID"
       }
-    }
+    },
+    "icon": "./assets/icon.png"
   }
 }
