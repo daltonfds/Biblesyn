@@ -31,14 +31,15 @@ export async function GET(req: Request) {
     return NextResponse.redirect(new URL('/?auth_error=missing_code', url.origin));
   }
 
-  const {error: exchangeError} = await supabase.auth.exchangeCodeForSession(code);
-  if (exchangeError) {
-    return NextResponse.redirect(new URL('/?auth_error=google_callback_failed', url.origin));
-  }
+  // exchangeCodeForSession returns the authenticated user directly.
+  // Do not call getUser() immediately afterwards: the cookie store still
+  // contains the incoming request cookies, while the new session cookies
+  // have only been attached to the redirect response.
+  const {data: authData, error: exchangeError} = await supabase.auth.exchangeCodeForSession(code);
+  const user = authData?.user;
 
-  const {data: {user}, error: userError} = await supabase.auth.getUser();
-  if (userError || !user) {
-    return NextResponse.redirect(new URL('/?auth_error=session_not_created', url.origin));
+  if (exchangeError || !user) {
+    return NextResponse.redirect(new URL('/?auth_error=google_callback_failed', url.origin));
   }
 
   const {data: profile} = await supabase
