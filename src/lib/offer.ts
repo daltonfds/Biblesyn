@@ -47,6 +47,7 @@ export function isCheckoutConfigured(offer: CountryOffer): boolean {
 export const PRICE = {
   old: new Intl.NumberFormat('pt-BR', {style: 'currency', currency: OFFERS.BR.currency}).format(OFFERS.BR.oldPrice),
   now: new Intl.NumberFormat('pt-BR', {style: 'currency', currency: OFFERS.BR.currency}).format(OFFERS.BR.price),
+  discount: Math.round((1 - OFFERS.BR.price / OFFERS.BR.oldPrice) * 100),
   total: 'R$ 97,00',
 };
 export const BONUSES = [
