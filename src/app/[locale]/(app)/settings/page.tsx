@@ -4,7 +4,10 @@ import {supabaseServer} from '@/lib/supabase/server';
 import {getCountries, getCountry, getLanguages, getLocale, getReaderPrefs} from '@/lib/locale';
 import {getT, getStrings} from '@/lib/i18n';
 import SettingsForm from '@/components/SettingsForm';
-export async function generateMetadata({params}: {params: {locale: string}}) {\n  const strings = await getStrings(params.locale);\n  return {title: strings['app.settings'] || strings['seo.title'] || 'Settings'};\n}
+export async function generateMetadata({params}: {params: {locale: string}}) {
+  const strings = await getStrings(params.locale);
+  return {title: strings['app.settings'] || strings['seo.title'] || 'Settings'};
+}
 export default async function Settings() {
   const sb = supabaseServer(); const t = await getT(); const prefs = getReaderPrefs();
   const {data: {user}} = await sb.auth.getUser();
