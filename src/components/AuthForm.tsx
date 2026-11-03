@@ -6,7 +6,7 @@ import {supabaseBrowser} from '@/lib/supabase/client';
 import GoogleButton from './GoogleButton';
 import {useT} from './I18nProvider';
 type Country = {code: string; name: string; default_locale: string | null}; type Lang = {code: string; name: string; native_name: string | null};
-const setCookie = (k: string, v: string) => { document.cookie = `${k}=${encodeURIComponent(v)};path=/;max-age=31536000;samesite=lax`; if (k === 'locale') document.cookie = `NEXT_LOCALE=${encodeURIComponent(v)};path=/;max-age=31536000;samesite=lax`; };
+const setCookie = (k: string, v: string) => { document.cookie = `${k}=${encodeURIComponent(v)};path=/;max-age=31536000;samesite=lax`; if (k === 'locale') document.cookie = `NEXT_LOCALE=${encodeURIComponent(v)};path=/;max-age=31536000;samesite=lax`; if (k === 'country') document.cookie = `NEXT_COUNTRY=${encodeURIComponent(v.toUpperCase())};path=/;max-age=31536000;samesite=lax`; };
 export default function AuthForm({mode, countries, languages, defaultCountry, defaultLocale}: {mode: 'login' | 'signup'; countries: Country[]; languages: Lang[]; defaultCountry: string; defaultLocale: string}) {
   const t = useT(); const router = useRouter();
   useEffect(() => {
@@ -29,7 +29,7 @@ export default function AuthForm({mode, countries, languages, defaultCountry, de
       if (error) setMsg(error.message); else if (data.session) { await post({country, locale}); router.push(next() as never); router.refresh(); } else setMsg(t('auth.check_email'));
     } else {
       const {error} = await sb.auth.signInWithPassword({email, password});
-      if (error) setMsg(error.message); else { await post({sync: true}); router.push(next()); router.refresh(); }
+      if (error) setMsg(error.message); else { await post({sync: true, locale}); router.push(next()); router.refresh(); }
     }
     setBusy(false);
   }
