@@ -20,5 +20,7 @@ export function getOffer(country?: string | null): CountryOffer {
 }
 
 export function isCheckoutConfigured(offer: CountryOffer): boolean {
-  return Boolean(offer.checkoutUrl.trim()) && offer.checkoutUrl.trim().toUpperCase() !== 'TODO';
+  if (!offer.checkoutUrl.trim() || offer.checkoutUrl.trim().toUpperCase() === 'TODO') return false;
+  try { const url = new URL(offer.checkoutUrl); return url.protocol === 'https:'; }
+  catch { return false; }
 }
