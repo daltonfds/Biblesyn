@@ -12,7 +12,9 @@ const Acc = ({ items }: { items: { q: string; a: string }[] }) => (
 export async function generateMetadata({params}: {params: {locale: string}}) {
   const {getStrings} = await import('@/lib/i18n');
   const strings = await getStrings(params.locale);
-  return {title: strings['seo.offer'], description: strings['seo.description'], robots: {index: false, follow: false}};
+  const title = strings['seo.offer'];
+  const description = strings['seo.description'];
+  return {title, description, openGraph: {title, description, type: 'website', siteName: 'Biblesyn'}, robots: {index: false, follow: false}};
 }
 
 export default function Page({params}: {params: {locale: string}}) {
