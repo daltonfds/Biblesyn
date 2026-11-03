@@ -30,8 +30,8 @@ function validSignature(request: NextRequest, raw: string, secret: string) {
 
 function eventAction(event: string, status: string): 'activate' | 'revoke' | 'ignore' {
   const value = norm(event + '_' + status);
-  if (/refund|chargeback|dispute|cancel|cancell?ed|expired|revok|failed|refused|rejected|past_due/.test(value)) return 'revoke';
-  if (/payment_confirmed|payment_paid|payment_approved|paid|approved|completed|subscription_active|subscription_renewed|renewed|activated/.test(value)) return 'activate';
+  if (/refund|reembolso|estorno|chargeback|dispute|cancel|cancelad[oa]s?|cancell?ed|expired|revok|failed|refused|rejected|past_due/.test(value)) return 'revoke';
+  if (/payment_confirmed|payment_paid|payment_approved|paid|approved|confirmed|completed|subscription_active|subscription_renewed|renewed|renovad[oa]s?|reativada|activated|ativada/.test(value)) return 'activate';
   return 'ignore';
 }
 
@@ -92,6 +92,10 @@ export async function POST(request: NextRequest, context: {params: {provider: st
     else throw new Error('buyer_reference_missing');
     const {data: profile, error: profileError} = await profileQuery.maybeSingle();
     if (profileError || !profile) throw new Error('buyer_not_found');
+    if (action === 'ignore') {
+      await db.from('payment_webhook_events').update({processing_status: 'ignored', user_id: profile.id}).eq('provider', provider).eq('provider_event_id', eventId);
+      return NextResponse.json({ok: true, processed: false, action: 'ignore'});
+    }
 
     if (action === 'activate') {
       if (!orderId) throw new Error('order_id_missing');
@@ -101,12 +105,12 @@ export async function POST(request: NextRequest, context: {params: {provider: st
       const expiry = new Date(base.getTime() + 30 * 24 * 60 * 60 * 1000);
       const {error} = await db.from('profiles').update({
         is_premium: true, premium_expires_at: expiry.toISOString(), premium_status: 'active',
-        premium_country: country || null, premium_currency: currency || null,
+        premium_country: country || profile.country || null, premium_currency: currency || null,
         premium_provider: provider, premium_order_id: orderId, premium_source: provider,
       }).eq('id', profile.id);
       if (error) throw new Error('profile_activation_failed');
       await db.from('payment_webhook_events').update({processing_status: 'processed', user_id: profile.id}).eq('provider', provider).eq('provider_event_id', eventId);
-      if (profile.email) await sendSubscriptionConfirmation(profile.email, profile.locale);
+      if (profile.email || email) await sendSubscriptionConfirmation(profile.email || email, profile.locale);
       return NextResponse.json({ok: true, processed: true, action, orderId});
     }
 
