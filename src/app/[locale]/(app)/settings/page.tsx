@@ -6,7 +6,7 @@ import {getT, getStrings} from '@/lib/i18n';
 import SettingsForm from '@/components/SettingsForm';
 export async function generateMetadata({params}: {params: {locale: string}}) {
   const strings = await getStrings(params.locale);
-  return {title: strings['app.settings'] || strings['seo.title'] || 'Settings'};
+  return {title: strings['settings.title'] || strings['seo.title'] || 'Settings'};
 }
 export default async function Settings() {
   const sb = supabaseServer(); const t = await getT(); const prefs = getReaderPrefs();
