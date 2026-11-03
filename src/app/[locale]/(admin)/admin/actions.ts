@@ -65,15 +65,6 @@ export async function saveLanguage(fd: FormData) {
   if (error) back('/admin/languages', `err=${encodeURIComponent(error.message)}`); revalidatePath('/', 'layout'); back('/admin/languages', 'saved=1');
 }
 export async function makeDefaultLanguage(fd: FormData) { await requireStaff(true); const db = supabaseAdmin(); await db.from('languages').update({is_default: false}).eq('is_default', true); await db.from('languages').update({is_default: true, active: true}).eq('code', str(fd, 'code')); revalidatePath('/', 'layout'); back('/admin/languages', 'saved=1'); }
-// ---------- countries & pricing
-export async function saveCountry(fd: FormData) {
-  await requireStaff(true); const db = supabaseAdmin(); const code = str(fd, 'code').toUpperCase(); const star = code === '*'; if (!code) back('/admin/pricing', 'err=Code is required');
-  if (!star) { const {error} = await db.from('countries').upsert({code, name: str(fd, 'name') || code, default_locale: str(fd, 'default_locale') || null, active: bool(fd, 'active')}, {onConflict: 'code'}); if (error) back('/admin/pricing', `err=${encodeURIComponent(error.message)}`); }
-  const cur = str(fd, 'currency').toUpperCase(); const amt = Math.round(Number(str(fd, 'amount').replace(',', '.')) * 100);
-  if (cur.length === 3 && amt > 0) await db.from('prices').upsert({country: code, currency: cur, amount_cents: amt, active: star ? true : bool(fd, 'price_active')}, {onConflict: 'country'}); else if (!star) await db.from('prices').delete().eq('country', code);
-  revalidatePath('/premium'); back('/admin/pricing', 'saved=1');
-}
-export async function deleteCountry(fd: FormData) { await requireStaff(true); const db = supabaseAdmin(); const code = str(fd, 'code'); await db.from('prices').delete().eq('country', code); await db.from('countries').delete().eq('code', code); back('/admin/pricing', 'saved=1'); }
 // ---------- interface strings
 export async function saveStrings(fd: FormData) {
   await requireStaff(); const db = supabaseAdmin(); const locale = str(fd, 'locale'); const rows: {key: string; locale: string; value: string}[] = []; const del: string[] = [];
@@ -89,8 +80,8 @@ export async function fillStrings(fd: FormData) {
 // ---------- users
 export async function userAction(fd: FormData) {
   const me = await requireStaff(true); const db = supabaseAdmin(); const id = str(fd, 'id'); const op = str(fd, 'op'); const base = `/admin/users/${id}`;
-  if (op === 'grant') await db.from('profiles').update({is_premium: true, premium_source: 'admin'}).eq('id', id);
-  if (op === 'revoke') await db.from('profiles').update({is_premium: false, premium_source: null}).eq('id', id);
+  if (op === 'grant') await db.from('profiles').update({is_premium: true, premium_source: 'admin', premium_provider: 'manual', premium_status: 'active', premium_expires_at: null}).eq('id', id);
+  if (op === 'revoke') await db.from('profiles').update({is_premium: false, premium_source: null, premium_status: 'revoked'}).eq('id', id);
   if (op === 'suspend' && id !== me.id) await db.from('profiles').update({suspended: true}).eq('id', id);
   if (op === 'unsuspend') await db.from('profiles').update({suspended: false}).eq('id', id);
   if (op === 'role' && id !== me.id && ['user', 'editor', 'admin'].includes(str(fd, 'role'))) await db.from('profiles').update({role: str(fd, 'role')}).eq('id', id);
