@@ -38,18 +38,28 @@ export async function GET(req: Request, {params}: {params: {locale: string}}) {
   const {data: profile} = await supabase.from('profiles')
     .select('locale,country,font_family,font_size').eq('id', user.id).maybeSingle();
   const opt = {path: '/', maxAge: 31536000, sameSite: 'lax' as const};
-  const countryCookie = cookieStore.get('country')?.value;
+  const countryCookie = cookieStore.get('NEXT_COUNTRY')?.value || cookieStore.get('country')?.value;
   const localeCookie = cookieStore.get('NEXT_LOCALE')?.value || locale;
   const updates: Record<string, string> = {};
   if (!profile?.country && countryCookie) updates.country = countryCookie.toUpperCase();
   if (!profile?.locale && localeCookie) updates.locale = localeCookie;
   if (Object.keys(updates).length) await supabase.from('profiles').update(updates).eq('id', user.id);
 
-  cookieStore.set('NEXT_LOCALE', profile?.locale || localeCookie, opt);
-  if (profile?.country) cookieStore.set('country', profile.country, opt);
+  const finalLocale = localeCookie || profile?.locale || locale;
+  const finalCountry = (countryCookie || profile?.country || '').toUpperCase();
+  cookieStore.set('NEXT_LOCALE', finalLocale, opt);
+  if (finalCountry) {
+    cookieStore.set('NEXT_COUNTRY', finalCountry, opt);
+    cookieStore.set('country', finalCountry, opt);
+  }
   if (profile) cookieStore.set('reader', JSON.stringify({f: profile.font_family, s: profile.font_size}), opt);
 
   const response = NextResponse.redirect(new URL(safeNext, url.origin));
+  response.cookies.set('NEXT_LOCALE', finalLocale, opt);
+  if (finalCountry) {
+    response.cookies.set('NEXT_COUNTRY', finalCountry, opt);
+    response.cookies.set('country', finalCountry, opt);
+  }
   response.headers.set('Cache-Control', 'no-store, max-age=0');
   return response;
 }
