@@ -89,7 +89,7 @@ export async function middleware(req: NextRequest) {
     intlResponse.cookies.delete('country');
   }
 
-  if (/^\/[a-zA-Z-]+\/auth\/callback(?:\/|$)/.test(pathname)) return intlResponse;
+  if (/^\/[a-zA-Z-]+\/auth\/callback(?:\/|$)/.test(pathname)) return privateCache(intlResponse);
 
   let authResponse = NextResponse.next({request: req});
   const supabase = createServerClient(
