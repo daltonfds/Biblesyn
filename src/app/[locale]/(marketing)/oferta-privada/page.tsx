@@ -1,9 +1,7 @@
 import CheckoutButton from "@/components/CheckoutButton";
 import {redirect} from "next/navigation";
 import {getCountry} from "@/lib/locale";
-import { PRICE, BONUSES, TEASERS, FAQ, getOffer, isCheckoutConfigured } from "@/lib/offer";
-
-const checkoutDisabled = !isCheckoutConfigured(getOffer('BR')) || getOffer('BR').price <= 0;
+import { BONUSES, TEASERS, FAQ, getOffer, getDiscountPercent, formatOfferCurrency, isCheckoutConfigured } from "@/lib/offer";
 
 const Acc = ({ items }: { items: { q: string; a: string }[] }) => (
   <>{items.map((i) => (
@@ -18,7 +16,13 @@ export async function generateMetadata({params}: {params: {locale: string}}) {
 }
 
 export default function Page({params}: {params: {locale: string}}) {
-  if (params.locale !== "pt-BR" || (getCountry() || process.env.NEXT_COUNTRY) !== "BR") redirect(`/${params.locale}/premium`);
+  const country = (getCountry() || process.env.NEXT_COUNTRY || 'US').toUpperCase();
+  if (params.locale !== "pt-BR" || country !== "BR") redirect(`/${params.locale}/premium`);
+  const offer = getOffer(country);
+  const oldPrice = formatOfferCurrency(params.locale, offer, offer.oldPrice);
+  const price = formatOfferCurrency(params.locale, offer, offer.price);
+  const discount = getDiscountPercent(offer);
+  const checkoutDisabled = !isCheckoutConfigured(offer) || offer.price <= 0;
   return (
     <main className="bs">
       <div className="top">OFERTA DE LANÇAMENTO NO BRASIL · POR TEMPO LIMITADO</div>
@@ -46,15 +50,14 @@ export default function Page({params}: {params: {locale: string}}) {
         <div className="core">
           <h3>🎁 Sistema Biblesyn completo</h3>
           <p>Assistente de Bíblia com IA, planos de estudo personalizados, devocional diário, painel de crescimento e áudio (ler, ouvir ou os dois).</p>
-          <p style={{ marginTop: 12 }}><s className="no">DE {PRICE.old}</s> <b className="h">POR {PRICE.now}</b> <span className="text-xs">({PRICE.discount}% de desconto)</span></p>
+          <p style={{ marginTop: 12 }}><s className="no">DE {oldPrice}</s> <b className="h">POR {price}</b> <span className="text-xs">({discount}% de desconto)</span></p>
         </div>
         {BONUSES.map((b) => (
           <div className="it" key={b.t}>
             <h3>{b.t}</h3><p>{b.d}</p>
-            <div className="v"><s>DE R$ 10</s><b>POR R$ 0</b></div>
+            <div className="v"><b>INCLUÍDO</b></div>
           </div>
         ))}
-        <p className="tot">🎉 Tudo isso valorado em mais de <s>{PRICE.total}</s></p>
       </div></section>
 
       <section className="band"><div className="w">
