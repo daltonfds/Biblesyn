@@ -1,7 +1,7 @@
 begin;
 
 alter table public.profiles drop constraint if exists profiles_premium_source_check;
-update public.profiles set is_premium = false, premium_source = null where premium_source = 'stripe';
+update public.profiles set is_premium = false, premium_source = null where premium_source is not null and premium_source not in ('escalepay','manual','admin');
 alter table public.profiles drop column if exists stripe_customer_id;
 alter table public.profiles add column if not exists premium_expires_at timestamptz;
 alter table public.profiles add column if not exists premium_country text;
