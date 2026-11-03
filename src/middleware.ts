@@ -47,8 +47,9 @@ export async function middleware(req: NextRequest) {
   const pathname = req.nextUrl.pathname;
   if (pathname.startsWith('/api/') || pathname.startsWith('/_next/')) return NextResponse.next();
 
-  const locale = detectLocale(req);
   const firstSegment = pathname.split('/')[1];
+  const pathLocale = SUPPORTED.has(firstSegment) ? firstSegment : null;
+  const locale = pathLocale || detectLocale(req);
   if (SUPPORTED.has(firstSegment) && firstSegment !== locale) {
     const target = req.nextUrl.clone();
     target.pathname = pathname.replace(new RegExp('^/' + firstSegment + '(?=/|$)'), '/' + locale);
