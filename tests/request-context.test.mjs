@@ -64,3 +64,10 @@ test('middleware always reads the current IP and refreshes or clears NEXT_COUNTR
   assert.match(middleware, /req\.nextUrl\.searchParams\.get\('country'\)/);
   assert.match(middleware, /process\.env\.VERCEL_ENV !== 'production'/);
 });
+
+
+test('middleware does not mutate immutable request headers and guards next-intl routing', async () => {
+  const source = await readFile(new URL('../src/middleware.ts', import.meta.url), 'utf8');
+  assert.doesNotMatch(source, /req\.headers\.set\(/);
+  assert.match(source, /try \{\s*intlResponse = handleI18nRouting\(req\);\s*\} catch/);
+});
