@@ -5,7 +5,6 @@ import path from 'node:path';
 import vm from 'node:vm';
 import ts from 'typescript';
 
-const root = new URL('../', import.meta.url);
 const source = fs.readFileSync(new URL('../src/lib/offer.ts', import.meta.url), 'utf8');
 const js = ts.transpileModule(source, {compilerOptions: {module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2020}}).outputText;
 const module = {exports: {}};
@@ -71,9 +70,27 @@ test('locale and country cookies survive middleware, auth, preference sync and c
     assert.match(source, /NEXT_COUNTRY/);
   }
   assert.match(middleware, /req\.cookies\.get\('NEXT_COUNTRY'\)/);
+  assert.match(middleware, /const locale = pathLocale \|\| detectLocale\(req\)/);
   assert.match(callback, /countryCookie = cookieStore\.get\('NEXT_COUNTRY'\)/);
   assert.match(auth, /post\(\{sync: true, locale\}\)/);
   assert.match(prefs, /readCookie\('NEXT_COUNTRY'\)/);
   assert.match(checkout, /getCountryCookie\(\) \|\| profile\?\.country/);
   assert.match(checkout, /buildOfferCheckoutUrl\(locale, country, user\.id, customerEmail\)/);
+});
+
+test('sale prices and EscalePay URLs have one source of truth', () => {
+  const walk = dir => fs.readdirSync(dir, {withFileTypes: true}).flatMap(entry => {
+    const full = path.join(dir, entry.name);
+    return entry.isDirectory() ? walk(full) : [full];
+  });
+  const files = [...walk(new URL('../src', import.meta.url).pathname), ...walk(new URL('../messages', import.meta.url).pathname)];
+  const currencyLiteral = /R\\$\\s*\\d|US\\$\\s*\\d|€\\s*\\d|\\d[,.]\\d{2}\\s*€|R\\s*\\d+[,.]\\d{2}/;
+  const checkoutLiteral = /https:\\/\\/checkout\\.escalepay\\.com\\//;
+  const violations = [];
+  for (const file of files) {
+    if (file.endsWith(path.join('lib', 'offer.ts'))) continue;
+    const text = fs.readFileSync(file, 'utf8');
+    if (currencyLiteral.test(text) || checkoutLiteral.test(text)) violations.push(path.relative(new URL('../', import.meta.url).pathname, file));
+  }
+  assert.deepEqual(violations, []);
 });
