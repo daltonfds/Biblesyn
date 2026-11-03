@@ -1,10 +1,11 @@
 import {Link} from '@/i18n/navigation';
 import {Check, Library, Sparkles, CalendarCheck, Headphones, NotebookPen} from 'lucide-react';
 import {getT, getStrings} from '@/lib/i18n';
-import {getCountry, getCountryCookie} from '@/lib/locale';
-import {getOfferPresentation, isCheckoutConfigured, resolveOfferCountry} from '@/lib/offer';
+import {getCountryCookie} from '@/lib/locale';
+import {getOfferPresentation, isCheckoutConfigured} from '@/lib/offer';
 import SubscriptionButton from '@/components/SubscriptionButton';
-import {supabaseServer} from '@/lib/supabase/server';
+
+export const dynamic = 'force-dynamic';
 
 export async function generateMetadata({params}: {params: {locale: string}}) {
   const strings = await getStrings(params.locale);
@@ -17,14 +18,7 @@ const FEATURES = [[Library, 'premium.f1'], [Sparkles, 'premium.f2'], [CalendarCh
 export default async function Premium({params}: {params: {locale: string}}) {
   const locale = params.locale;
   const t = await getT();
-  const sb = supabaseServer();
-  const {data: {user}} = await sb.auth.getUser();
-  let profileCountry = '';
-  if (user) {
-    const {data: profile} = await sb.from('profiles').select('country').eq('id', user.id).maybeSingle();
-    profileCountry = profile?.country || '';
-  }
-  const country = resolveOfferCountry(getCountryCookie() || profileCountry || getCountry() || 'US');
+  const country = getCountryCookie() || 'US';
   const {offer, formattedPrice, formattedOldPrice, discountPercent} = getOfferPresentation(locale, country);
   const checkoutAvailable = isCheckoutConfigured(offer) && offer.price > 0;
 
