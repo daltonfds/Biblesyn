@@ -139,7 +139,8 @@
     "subscribe": "Suscribirse · {price}/mes",
     "create_to_subscribe": "Crea una cuenta para suscribirte",
     "not_now": "Ahora no",
-    "secure": "Pago seguro con Stripe. Se renueva mensualmente hasta que canceles."
+    "secure": "El pago se procesa de forma segura a través de nuestra plataforma de pago.",
+    "discount": "Ahorra un {percent}%"
   },
   "share": {
     "title": "Compartir",
