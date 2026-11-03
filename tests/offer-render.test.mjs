@@ -22,7 +22,7 @@ const merge = (base, override) => {
   return result;
 };
 const messagesFor = locale => locale === 'en-ZA'
-  ? merge(readMessages('en.json'), readMessages('en-ZA.json'))
+  ? merge(readMessages('en'), readMessages('en-ZA'))
   : readMessages(locale);
 const clean = value => value.replace(/[\u00a0\u202f]/g, ' ').replace(/\s+/g, ' ').trim();
 
@@ -69,11 +69,11 @@ test('locale and country cookies survive middleware, auth, preference sync and c
     assert.match(source, /NEXT_LOCALE/);
     assert.match(source, /NEXT_COUNTRY/);
   }
-  assert.match(middleware, /req\.cookies\.get\('NEXT_COUNTRY'\)/);
+  assert.match(middleware, /req\.headers\.get\('x-vercel-ip-country'\)/);
   assert.match(middleware, /const locale = pathLocale \|\| detectLocale\(req\)/);
   assert.match(callback, /countryCookie = cookieStore\.get\('NEXT_COUNTRY'\)/);
   assert.match(auth, /post\(\{sync: true, locale\}\)/);
-  assert.match(prefs, /readCookie\('NEXT_COUNTRY'\)/);
+  assert.match(prefs, /x-vercel-ip-country/);
   assert.match(checkout, /getCountryCookie\(\) \|\| profile\?\.country/);
   assert.match(checkout, /buildOfferCheckoutUrl\(locale, country, user\.id, customerEmail\)/);
 });
