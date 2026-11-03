@@ -85,6 +85,11 @@ export async function POST(request: NextRequest, context: {params: {provider: st
     return NextResponse.json({error: 'event_log_failed'}, {status: 500});
   }
 
+  if (action === 'ignore') {
+    await db.from('payment_webhook_events').update({processing_status: 'ignored'}).eq('provider', provider).eq('provider_event_id', eventId);
+    return NextResponse.json({ok: true, processed: false, action: 'ignore'});
+  }
+
   try {
     let profileQuery = db.from('profiles').select('id,email,locale,is_premium,premium_expires_at');
     if (userId) profileQuery = profileQuery.eq('id', userId);
@@ -92,10 +97,6 @@ export async function POST(request: NextRequest, context: {params: {provider: st
     else throw new Error('buyer_reference_missing');
     const {data: profile, error: profileError} = await profileQuery.maybeSingle();
     if (profileError || !profile) throw new Error('buyer_not_found');
-    if (action === 'ignore') {
-      await db.from('payment_webhook_events').update({processing_status: 'ignored', user_id: profile.id}).eq('provider', provider).eq('provider_event_id', eventId);
-      return NextResponse.json({ok: true, processed: false, action: 'ignore'});
-    }
 
     if (action === 'activate') {
       if (!orderId) throw new Error('order_id_missing');
