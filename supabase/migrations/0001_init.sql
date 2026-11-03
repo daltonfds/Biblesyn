@@ -16,7 +16,6 @@ create table public.plan_progress (user_id uuid not null default auth.uid() refe
 create table public.journal_entries (id uuid primary key default gen_random_uuid(), user_id uuid not null default auth.uid() references auth.users on delete cascade, body text not null, verse_ref text, created_at timestamptz not null default now());
 create table public.saved_articles (user_id uuid not null default auth.uid() references auth.users on delete cascade, article_id uuid not null references public.articles on delete cascade, primary key (user_id, article_id));
 create table public.devotions (day date primary key, verse_ref text not null, verse_text text not null, reflection text, prayer text);
-create table public.prices (country text primary key, currency text not null, amount_cents int not null check (amount_cents > 0), active boolean not null default true);
 
 create function public.handle_new_user() returns trigger language plpgsql security definer set search_path = public as $$
 begin insert into public.profiles (id) values (new.id); return new; end $$;
@@ -36,7 +35,6 @@ alter table public.plan_progress enable row level security;
 alter table public.journal_entries enable row level security;
 alter table public.saved_articles enable row level security;
 alter table public.devotions enable row level security;
-alter table public.prices enable row level security;
 
 create policy "own profile read" on public.profiles for select to authenticated using (id = (select auth.uid()));
 create policy "own profile update" on public.profiles for update to authenticated using (id = (select auth.uid()));
@@ -51,15 +49,12 @@ create policy "own progress" on public.plan_progress for all to authenticated us
 create policy "own journal" on public.journal_entries for all to authenticated using (user_id = (select auth.uid())) with check (user_id = (select auth.uid()));
 create policy "own saved" on public.saved_articles for all to authenticated using (user_id = (select auth.uid())) with check (user_id = (select auth.uid()));
 create policy "devotions public read" on public.devotions for select to anon, authenticated using (true);
-create policy "prices public read" on public.prices for select to anon, authenticated using (active);
 create index on public.plan_progress (plan_id);
 create index on public.journal_entries (user_id, created_at desc);
 create index on public.study_plan_days (plan_id);
 create index on public.saved_articles (article_id);
 
 -- Seed. Amounts are in minor units. Checkout prices are managed in src/lib/offer.ts.
-insert into public.prices (country, currency, amount_cents) values
- ('*','USD',100),('US','USD',100),('PT','EUR',100),('ES','EUR',100),('FR','EUR',100),('BR','BRL',500),('GB','GBP',100),('ZA','ZAR',2000);
 insert into public.study_plans (slug, title, description, days, sort) values
  ('21-days-of-daniel','21 Days of Daniel','Faith, prayer and courage under pressure.',21,1),
  ('30-days-of-prayer','30 Days of Prayer','Learn to pray from Scripture.',30,2),
