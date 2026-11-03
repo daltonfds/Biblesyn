@@ -23,6 +23,25 @@ export function getOffer(country?: string | null): CountryOffer {
   return OFFERS[resolveOfferCountry(country)];
 }
 
+export function formatOfferCurrency(locale: string, offer: CountryOffer, amount: number): string {
+  const formatted = new Intl.NumberFormat(locale, {style: 'currency', currency: offer.currency}).format(amount);
+  // English uses "$" for USD by default; make the United States currency explicit.
+  return locale === 'en' && offer.currency === 'USD' ? formatted.replace(/^\$/, 'US$') : formatted;
+}
+
+export function getOfferPresentation(locale: string, country?: string | null) {
+  const resolvedCountry = resolveOfferCountry(country);
+  const offer = OFFERS[resolvedCountry];
+  return {
+    country: resolvedCountry,
+    offer,
+    formattedPrice: formatOfferCurrency(locale, offer, offer.price),
+    formattedOldPrice: offer.oldPrice > 0 ? formatOfferCurrency(locale, offer, offer.oldPrice) : '',
+    discountPercent: getDiscountPercent(offer),
+    checkoutUrl: offer.checkoutUrl,
+  };
+}
+
 export function getOfferByCheckoutId(checkoutId?: string | number | null): {country: string; offer: CountryOffer} | null {
   const id = String(checkoutId ?? '').trim();
   if (!id) return null;
@@ -41,8 +60,6 @@ export function resolveWebhookOffer(checkoutId?: string | number | null, payment
   const matched = getOfferByCheckoutId(checkoutId);
   if (!matched) return null;
   const id = String(checkoutId ?? '').trim();
-  // EscalePay checkout 3788940 is shared by PT and IT. Prefer the signed
-  // country attribution, then the saved profile country, then the ID match (PT).
   for (const candidate of [paymentCountry, profileCountry, matched.country]) {
     const code = (candidate || '').trim().toUpperCase();
     if (!Object.prototype.hasOwnProperty.call(OFFERS, code)) continue;
@@ -66,13 +83,6 @@ export function isCheckoutConfigured(offer: CountryOffer): boolean {
   catch { return false; }
 }
 
-// Legacy Brazil-only landing page display values.
-export const PRICE = {
-  old: new Intl.NumberFormat('pt-BR', {style: 'currency', currency: OFFERS.BR.currency}).format(OFFERS.BR.oldPrice),
-  now: new Intl.NumberFormat('pt-BR', {style: 'currency', currency: OFFERS.BR.currency}).format(OFFERS.BR.price),
-  discount: getDiscountPercent(OFFERS.BR),
-  total: 'R$ 97,00',
-};
 export const BONUSES = [
   {t: 'Manual de Interpretação Bíblica', d: 'Interprete corretamente, evite erros comuns e aplique a hermenêutica de forma simples.'},
   {t: 'Devocionais de Poder: 30 dias', d: 'Reflexões, versículos-chave e orações para fortalecer sua conexão com Deus.'},
