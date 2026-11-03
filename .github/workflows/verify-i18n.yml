@@ -1,4 +1,4 @@
-name: Verify i18n branch
+name: Verify i18n and billing branch
 on:
   push:
     branches: [feat/i18n-7-locales]
@@ -14,9 +14,7 @@ jobs:
       NEXT_PUBLIC_SUPABASE_ANON_KEY: test-anon-key
       SUPABASE_SERVICE_ROLE_KEY: test-service-role-key
       NEXT_PUBLIC_SITE_URL: https://blui.online
-      NEXT_PUBLIC_CHECKOUT_URL: https://checkout.escalepay.com/9630961
-      STRIPE_SECRET_KEY: sk_test_placeholder
-      STRIPE_WEBHOOK_SECRET: whsec_placeholder
+      ESCALEPAY_WEBHOOK_SECRET: test-webhook-secret
       RESEND_API_KEY: re_placeholder
       RESEND_FROM_EMAIL: Biblesyn <no-reply@example.com>
     steps:
@@ -27,6 +25,8 @@ jobs:
       - run: npm install --no-audit --no-fund
       - name: Validate translation keys
         run: npm run validate:messages
+      - name: Country offer tests
+        run: npm run test:offers
       - name: TypeScript
         run: npx tsc --noEmit
       - name: Next.js production build
