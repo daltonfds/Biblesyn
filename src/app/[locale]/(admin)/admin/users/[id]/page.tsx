@@ -29,7 +29,8 @@ export default async function UserPage({params, searchParams}: {params: {id: str
       <div><dt className="text-mute">Status</dt><dd>{u.premium_status ?? (u.is_premium ? 'active' : 'free')}</dd></div>
       <div><dt className="text-mute">Expires</dt><dd>{u.premium_expires_at ? new Date(u.premium_expires_at).toLocaleString() : u.is_premium ? 'No expiry (manual grant)' : '—'}</dd></div>
       <div><dt className="text-mute">Provider</dt><dd>{u.premium_provider ?? '—'}</dd></div>
-      <div><dt className="text-mute">Country / currency</dt><dd>{u.premium_country ?? '—'} / {u.premium_currency ?? '—'}</dd></div>
+      <div><dt className="text-mute">Country</dt><dd>{u.premium_country ?? u.country ?? '—'}</dd></div>
+      <div><dt className="text-mute">Currency</dt><dd>{u.premium_currency ?? '—'}</dd></div>
       <div className="col-span-2"><dt className="text-mute">Order reference</dt><dd className="break-all">{u.premium_order_id ?? '—'}</dd></div>
     </dl>
     <h2 className="mb-2 mt-6 font-semibold">Payment webhook history</h2>
