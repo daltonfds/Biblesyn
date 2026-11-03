@@ -80,9 +80,18 @@ export async function POST(request: NextRequest, context: {params: {provider: st
     order_id: orderId || null, payload: body, processing_status: 'received', event_hash: eventHash,
   });
   if (logError) {
-    if (logError.code === '23505') return NextResponse.json({ok: true, duplicate: true});
-    console.error('Payment webhook log insert failed:', logError.code);
-    return NextResponse.json({error: 'event_log_failed'}, {status: 500});
+    if (logError.code !== '23505') {
+      console.error('Payment webhook log insert failed:', logError.code);
+      return NextResponse.json({error: 'event_log_failed'}, {status: 500});
+    }
+    let existing = await db.from('payment_webhook_events').select('processing_status').eq('provider', provider).eq('provider_event_id', eventId).maybeSingle();
+    if (!existing.data) existing = await db.from('payment_webhook_events').select('processing_status').eq('provider', provider).eq('event_hash', eventHash).maybeSingle();
+    if (!existing.data) return NextResponse.json({error: 'duplicate_event_lookup_failed'}, {status: 500});
+    if (existing.data.processing_status === 'processed' || existing.data.processing_status === 'ignored') {
+      return NextResponse.json({ok: true, duplicate: true});
+    }
+    await db.from('payment_webhook_events').update({processing_status: 'received', processing_error: null})
+      .eq('provider', provider).eq('provider_event_id', eventId);
   }
 
   if (action === 'ignore') {
@@ -91,7 +100,7 @@ export async function POST(request: NextRequest, context: {params: {provider: st
   }
 
   try {
-    let profileQuery = db.from('profiles').select('id,email,locale,is_premium,premium_expires_at');
+    let profileQuery = db.from('profiles').select('id,email,locale,country,is_premium,premium_expires_at,premium_order_id');
     if (userId) profileQuery = profileQuery.eq('id', userId);
     else if (email) profileQuery = profileQuery.ilike('email', email);
     else throw new Error('buyer_reference_missing');
@@ -100,6 +109,11 @@ export async function POST(request: NextRequest, context: {params: {provider: st
 
     if (action === 'activate') {
       if (!orderId) throw new Error('order_id_missing');
+      if (profile.premium_order_id === orderId && profile.is_premium) {
+        await db.from('payment_webhook_events').update({processing_status: 'processed', user_id: profile.id})
+          .eq('provider', provider).eq('provider_event_id', eventId);
+        return NextResponse.json({ok: true, processed: true, duplicateOrder: true});
+      }
       const now = new Date();
       const previousEnd = profile.premium_expires_at ? new Date(profile.premium_expires_at) : now;
       const base = previousEnd > now ? previousEnd : now;
