@@ -6,10 +6,12 @@ export default function CheckoutButton({
   children,
   className = 'btn',
   style,
+  disabled = false,
 }: {
   children: React.ReactNode;
   className?: string;
   style?: React.CSSProperties;
+  disabled?: boolean;
 }) {
   const locale = useLocale();
   const [busy, setBusy] = useState(false);
@@ -36,7 +38,7 @@ export default function CheckoutButton({
   }
   return (
     <div>
-      <button type="button" onClick={checkout} disabled={busy} className={className} style={style}>
+      <button type="button" onClick={checkout} disabled={busy || disabled} aria-disabled={busy || disabled} className={className} style={style}>
         {busy ? '…' : children}
       </button>
       {error && <p role="alert" className="mt-2 text-center text-xs text-red-600">{error}</p>}
