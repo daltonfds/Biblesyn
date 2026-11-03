@@ -11,6 +11,8 @@ import LocaleSwitcher from '@/components/LocaleSwitcher';
 import {getStrings} from '@/lib/i18n';
 import {routing} from '@/i18n/routing';
 
+export const dynamic = 'force-dynamic';
+
 export const viewport: Viewport = {themeColor: '#ffffff', viewportFit: 'cover'};
 
 export async function generateMetadata({params}: {params: {locale: string}}): Promise<Metadata> {
