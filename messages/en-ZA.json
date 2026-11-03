@@ -1,0 +1,16 @@
+{
+  "auth": {
+    "create_sub": "Save your progress, journal and favourites."
+  },
+  "journal": {
+    "saved_empty": "Saved articles will appear here."
+  },
+  "premium": {
+    "secure": "Secure checkout is provided by our payment partner. Billing is managed externally.",
+    "discount": "Save {percent}%"
+  },
+  "seo": {
+    "title": "Biblesyn — Understand the Word. Strengthen Your Spirit.",
+    "description": "Biblical understanding, daily devotionals and study plans to strengthen your spiritual journey."
+  }
+}

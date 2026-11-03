@@ -1,13 +1,12 @@
 'use client';
 import {useEffect, useState} from 'react';
-import Link from 'next/link';
-import {useRouter} from 'next/navigation';
+import {Link, useRouter} from '@/i18n/navigation';
 import {X, Mail, Lock, Globe, Languages} from 'lucide-react';
 import {supabaseBrowser} from '@/lib/supabase/client';
 import GoogleButton from './GoogleButton';
 import {useT} from './I18nProvider';
 type Country = {code: string; name: string; default_locale: string | null}; type Lang = {code: string; name: string; native_name: string | null};
-const setCookie = (k: string, v: string) => { document.cookie = `${k}=${encodeURIComponent(v)};path=/;max-age=31536000;samesite=lax`; };
+const setCookie = (k: string, v: string) => { document.cookie = `${k}=${encodeURIComponent(v)};path=/;max-age=31536000;samesite=lax`; if (k === 'locale') document.cookie = `NEXT_LOCALE=${encodeURIComponent(v)};path=/;max-age=31536000;samesite=lax`; if (k === 'country') document.cookie = `NEXT_COUNTRY=${encodeURIComponent(v.toUpperCase())};path=/;max-age=31536000;samesite=lax`; };
 export default function AuthForm({mode, countries, languages, defaultCountry, defaultLocale}: {mode: 'login' | 'signup'; countries: Country[]; languages: Lang[]; defaultCountry: string; defaultLocale: string}) {
   const t = useT(); const router = useRouter();
   useEffect(() => {
@@ -17,7 +16,7 @@ export default function AuthForm({mode, countries, languages, defaultCountry, de
   }, []);
   const [email, setEmail] = useState(''); const [password, setPassword] = useState(''); const [msg, setMsg] = useState(''); const [busy, setBusy] = useState(false);
   const [country, setCountry] = useState(countries.some(c => c.code === defaultCountry) ? defaultCountry : countries[0]?.code ?? ''); const [locale, setLocale] = useState(defaultLocale);
-  const next = () => { const n = typeof window === 'undefined' ? '/home' : new URLSearchParams(window.location.search).get('next') || '/home'; return n.startsWith('/') && !n.startsWith('//') ? n : '/home'; };
+  const next = () => { const raw = typeof window === 'undefined' ? '/home' : new URLSearchParams(window.location.search).get('next') || '/home'; if (!raw.startsWith('/') || raw.startsWith('//')) return '/home'; return raw.startsWith(`/${locale}/`) ? raw.slice(locale.length + 1) : raw; };
   const post = (b: object) => fetch('/api/prefs', {method: 'POST', headers: {'content-type': 'application/json'}, body: JSON.stringify(b)});
   function pickCountry(code: string) { setCountry(code); const l = countries.find(c => c.code === code)?.default_locale; if (l && languages.some(x => x.code === l)) pickLocale(l); }
   function pickLocale(l: string) { setLocale(l); setCookie('locale', l); router.refresh(); }
@@ -26,11 +25,11 @@ export default function AuthForm({mode, countries, languages, defaultCountry, de
     e.preventDefault(); setBusy(true); setMsg(''); const sb = supabaseBrowser();
     if (mode === 'signup') {
       remember();
-      const {data, error} = await sb.auth.signUp({email, password, options: {data: {country, locale}, emailRedirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(next())}`}});
-      if (error) setMsg(error.message); else if (data.session) { await post({country, locale}); router.push(next()); router.refresh(); } else setMsg(t('auth.check_email'));
+      const {data, error} = await sb.auth.signUp({email, password, options: {data: {country, locale}, emailRedirectTo: `${window.location.origin}/${locale}/auth/callback?next=${encodeURIComponent(`/${locale}${next()}`)}`}});
+      if (error) setMsg(error.message); else if (data.session) { await post({country, locale}); router.push(next() as never); router.refresh(); } else setMsg(t('auth.check_email'));
     } else {
       const {error} = await sb.auth.signInWithPassword({email, password});
-      if (error) setMsg(error.message); else { await post({sync: true}); router.push(next()); router.refresh(); }
+      if (error) setMsg(error.message); else { await post({sync: true, locale}); router.push(next()); router.refresh(); }
     }
     setBusy(false);
   }

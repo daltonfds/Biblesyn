@@ -1,0 +1,207 @@
+{
+  "nav": {
+    "home": "Accueil",
+    "library": "Bibliothèque",
+    "plans": "Programmes",
+    "assistant": "Assistant",
+    "you": "Profil"
+  },
+  "greet": {
+    "morning": "Bonjour",
+    "afternoon": "Bon après-midi",
+    "evening": "Bonsoir"
+  },
+  "home": {
+    "today": "Aujourd’hui",
+    "streak": "Série de {n} jours",
+    "devotion": "Méditation quotidienne",
+    "continue": "Continuer votre programme",
+    "day_of": "Jour {n} sur {total}",
+    "from_library": "De la bibliothèque",
+    "empty": "De nouveaux contenus arrivent bientôt."
+  },
+  "common": {
+    "read": "Lire",
+    "listen": "Écouter",
+    "read_listen": "Lire et écouter",
+    "min": "{n} min",
+    "read_or_listen": "Lire ou écouter",
+    "login": "Se connecter",
+    "close": "Fermer",
+    "back": "Retour",
+    "free": "Gratuit"
+  },
+  "auth": {
+    "create_title": "Créer votre compte",
+    "create_sub": "Enregistrez votre progression, votre journal et vos favoris.",
+    "welcome_back": "Heureux de vous retrouver",
+    "tagline": "Comprenez la Parole. Fortifiez votre esprit.",
+    "email": "E-mail",
+    "password": "Mot de passe",
+    "country": "Pays",
+    "language": "Langue",
+    "create_btn": "Créer un compte",
+    "login_btn": "Se connecter",
+    "or": "ou",
+    "google": "Continuer avec Google",
+    "have_account": "Vous avez déjà un compte ?",
+    "new_here": "Nouveau ici ?",
+    "create_link": "Créer un compte",
+    "guest": "Continuer sans compte",
+    "check_email": "Consultez votre e-mail pour confirmer votre compte."
+  },
+  "gate": {
+    "title": "Créez un compte gratuit pour continuer la lecture",
+    "title_plan": "Créez un compte gratuit pour commencer ce programme",
+    "title_listen": "Créez un compte gratuit pour écouter",
+    "sub": "Explorez librement. Un compte donne accès aux articles complets, à l’audio, aux programmes et à votre journal.",
+    "member": "Déjà membre ?"
+  },
+  "lib": {
+    "title": "Bibliothèque spirituelle",
+    "search": "Rechercher des thèmes, versets et questions",
+    "all": "Tout",
+    "empty": "Aucun résultat."
+  },
+  "art": {
+    "unlock": "Débloquer toute la bibliothèque",
+    "see_premium": "Découvrir Premium",
+    "listening": "Mode écoute. Appuyez sur lecture ci-dessous.",
+    "save": "Enregistrer",
+    "unsave": "Retirer des favoris",
+    "reading_mode": "Mode lecture",
+    "seek": "Avancer"
+  },
+  "plans": {
+    "title": "Programmes d’étude",
+    "streak": "Jours consécutifs",
+    "done": "Programmes terminés",
+    "notes": "Notes du journal",
+    "in_progress": "En cours",
+    "continue_day": "Continuer au jour {n}",
+    "explore": "Explorer les programmes",
+    "days": "{n} jours",
+    "mark": "Marquer comme terminé",
+    "completed": "Terminé",
+    "progress": "{done} jours sur {total} terminés",
+    "more_premium": "Plus de jours sont accessibles avec Premium.",
+    "day": "Jour {n}"
+  },
+  "asst": {
+    "title": "Assistant biblique",
+    "sub": "Des réponses fondées sur les Écritures",
+    "placeholder": "Posez une question sur un verset ou un sujet",
+    "compare": "Comparer les points de vue",
+    "related": "Études associées",
+    "compare_q": "Comparez les principaux points de vue chrétiens sur ce sujet.",
+    "related_q": "Suggérez des études et des passages associés.",
+    "login": "Connectez-vous pour poser des questions.",
+    "premium_only": "L’assistant fait partie de Premium.",
+    "error": "Une erreur s’est produite. Réessayez.",
+    "thinking": "Réflexion…",
+    "starter_title": "Posez toutes vos questions sur la Bible.",
+    "send": "Envoyer",
+    "s1": "Pourquoi Dieu a-t-il éprouvé Abraham ?",
+    "s2": "Comment prier quand je ne ressens rien ?",
+    "s3": "Que signifie vraiment Romains 8:28 ?"
+  },
+  "journal": {
+    "title": "Journal",
+    "reflection": "Réflexion du jour",
+    "prompt": "Où avez-vous perçu la présence de Dieu aujourd’hui ?",
+    "write": "Écrire une note",
+    "save": "Enregistrer la note",
+    "verse_ph": "Verset (facultatif), ex. : Psaume 46:10",
+    "entries": "Notes",
+    "goals": "Objectifs",
+    "saved": "Enregistrés",
+    "goal_ph": "Un objectif spirituel",
+    "saved_empty": "Vos articles enregistrés apparaîtront ici.",
+    "delete": "Supprimer",
+    "go_premium": "Passer à Premium",
+    "premium_member": "Membre Premium",
+    "settings": "Paramètres",
+    "logout": "Se déconnecter"
+  },
+  "premium": {
+    "label": "Premium",
+    "title": "Un abonnement. Toute l’expérience.",
+    "f1": "Bibliothèque spirituelle complète",
+    "f2": "Assistant biblique IA",
+    "f3": "Tous les programmes d’étude",
+    "f4": "Audio pour chaque étude",
+    "f5": "Journal et tableau de progression",
+    "monthly": "Mensuel",
+    "cancel_anytime": "Résiliation à tout moment",
+    "per_month": "/mois",
+    "price_for": "Prix pour {country}",
+    "change": "Changer de pays",
+    "subscribe": "S’abonner · {price}/mois",
+    "create_to_subscribe": "Créez un compte pour vous abonner",
+    "not_now": "Pas maintenant",
+    "secure": "Le paiement est traité en toute sécurité par notre plateforme de paiement.",
+    "discount": "Économisez {percent}%"
+  },
+  "share": {
+    "title": "Partager",
+    "copy": "Copier le lien",
+    "copied": "Lien copié",
+    "more": "Plus d’options"
+  },
+  "settings": {
+    "title": "Paramètres",
+    "language": "Langue",
+    "country": "Pays",
+    "country_hint": "Votre pays détermine le prix et la devise de l’abonnement.",
+    "reading": "Lecture",
+    "typeface": "Police",
+    "size": "Taille du texte",
+    "serif": "Avec empattement",
+    "sans": "Sans empattement",
+    "classic": "Classique",
+    "save": "Enregistrer",
+    "saved": "Enregistré",
+    "manage_sub": "Gérer l’abonnement",
+    "sample": "Aa"
+  },
+  "account": {
+    "suspended": "Votre compte est suspendu.",
+    "logout": "Se déconnecter"
+  },
+  "seo": {
+    "title": "Biblesyn — Comprenez la Parole. Fortifiez votre esprit.",
+    "description": "Étude biblique, méditations quotidiennes et programmes pour fortifier votre cheminement spirituel.",
+    "home": "Accueil",
+    "offer": "Offre spéciale",
+    "premium": "Premium",
+    "login": "Se connecter",
+    "signup": "Créer un compte"
+  },
+  "landing": {
+    "title": "Comprenez la Parole. Fortifiez votre esprit.",
+    "description": "Étude biblique, méditations quotidiennes et programmes pour fortifier votre cheminement spirituel.",
+    "cta": "Commencer votre parcours"
+  },
+  "paywall": {
+    "title": "Toute votre expérience de croissance spirituelle",
+    "description": "Débloquez la bibliothèque spirituelle, l’assistant biblique, les programmes et les contenus audio.",
+    "cta": "S’abonner à Premium"
+  },
+  "emails": {
+    "subscription_subject": "Votre accès à Biblesyn Premium est prêt",
+    "subscription_heading": "Bienvenue sur Biblesyn Premium",
+    "subscription_body": "Votre abonnement a été confirmé. Vous pouvez désormais accéder à la bibliothèque spirituelle complète, aux programmes d’étude et à l’assistant biblique.",
+    "subscription_cta": "Ouvrir Biblesyn"
+  },
+  "app": {
+    "title": "Application Biblesyn",
+    "description": "Votre espace personnel d’étude biblique et de croissance spirituelle.",
+    "home": "Accueil",
+    "library": "Bibliothèque",
+    "plans": "Programmes d’étude",
+    "assistant": "Assistant biblique",
+    "devotion": "Méditation",
+    "journal": "Journal",
+    "settings": "Paramètres"
+  }
+}

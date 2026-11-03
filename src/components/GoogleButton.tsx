@@ -3,6 +3,7 @@ import {useState} from 'react';
 import {FcGoogle} from 'react-icons/fc';
 import {supabaseBrowser} from '@/lib/supabase/client';
 import {useT} from './I18nProvider';
+
 export default function GoogleButton({next = '/home', dark = false, before}: {next?: string; dark?: boolean; before?: () => void}) {
   const t = useT();
   const [error, setError] = useState('');
@@ -12,9 +13,13 @@ export default function GoogleButton({next = '/home', dark = false, before}: {ne
     setBusy(true);
     try {
       before?.();
+      const locale = window.location.pathname.split('/')[1] || 'en';
+      const localizedNext = next.startsWith('/' + locale + '/') ? next : '/' + locale + (next.startsWith('/') ? next : '/' + next);
+      const callback = new URL('/' + locale + '/auth/callback', window.location.origin);
+      callback.searchParams.set('next', localizedNext);
       const {error: oauthError} = await supabaseBrowser().auth.signInWithOAuth({
         provider: 'google',
-        options: {redirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(next)}`},
+        options: {redirectTo: callback.toString()},
       });
       if (oauthError) {
         setError(oauthError.message);

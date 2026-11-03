@@ -1,6 +1,5 @@
 'use client';
-import Link from 'next/link';
-import {usePathname} from 'next/navigation';
+import {Link, usePathname} from '@/i18n/navigation';
 import {House, BookOpen, CalendarCheck, Sparkles, User} from 'lucide-react';
 import {useT} from './I18nProvider';
 const tabs = [{href: '/home', k: 'home', Icon: House}, {href: '/library', k: 'library', Icon: BookOpen}, {href: '/plans', k: 'plans', Icon: CalendarCheck}, {href: '/assistant', k: 'assistant', Icon: Sparkles}, {href: '/journal', k: 'you', Icon: User}];

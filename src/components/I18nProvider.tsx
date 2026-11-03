@@ -1,12 +1,20 @@
 'use client';
-import {createContext, useContext} from 'react';
-type Ctx = {strings: Record<string, string>; locale: string};
-const C = createContext<Ctx>({strings: {}, locale: 'en'});
-export default function I18nProvider({strings, locale, children}: Ctx & {children: React.ReactNode}) {
-  return <C.Provider value={{strings, locale}}>{children}</C.Provider>;
+import {useTranslations, useLocale as useNextIntlLocale} from 'next-intl';
+
+export default function I18nProvider({
+  children,
+}: {
+  children: React.ReactNode;
+  strings?: Record<string, string>;
+  locale?: string;
+}) {
+  return <>{children}</>;
 }
+
 export function useT() {
-  const {strings} = useContext(C);
-  return (k: string, v?: Record<string, string | number>) => (strings[k] ?? k).replace(/\{(\w+)\}/g, (_, x) => String(v?.[x] ?? ''));
+  const translate = useTranslations();
+  return (key: string, values?: Record<string, string | number>) =>
+    translate(key as never, values as never);
 }
-export const useLocale = () => useContext(C).locale;
+
+export const useLocale = useNextIntlLocale;

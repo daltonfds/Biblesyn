@@ -1,0 +1,76 @@
+import '../globals.css';
+import '../biblesyn.css';
+import type {Metadata, Viewport} from 'next';
+import {Suspense} from 'react';
+import {notFound} from 'next/navigation';
+import {headers} from 'next/headers';
+import {NextIntlClientProvider} from 'next-intl';
+import I18nProvider from '@/components/I18nProvider';
+import VisitorTracker from '@/components/VisitorTracker';
+import LocaleSwitcher from '@/components/LocaleSwitcher';
+import {getStrings} from '@/lib/i18n';
+import {routing} from '@/i18n/routing';
+
+export const dynamic = 'force-dynamic';
+
+export const viewport: Viewport = {themeColor: '#ffffff', viewportFit: 'cover'};
+
+export async function generateMetadata({params}: {params: {locale: string}}): Promise<Metadata> {
+  const locale = params.locale;
+  const strings = await getStrings(locale);
+  const currentPath = headers().get('x-biblesyn-path') || '/' + locale;
+  const unlocalized = currentPath.replace(/^\/(en|en-ZA|pt-BR|pt-PT|fr|es|it)(?=\/|$)/, '') || '/';
+  const suffix = unlocalized === '/' ? '' : unlocalized;
+  const pageTitleKey: Record<string, string> = {
+    '/home': 'app.home', '/library': 'app.library', '/plans': 'app.plans',
+    '/assistant': 'app.assistant', '/devotion': 'app.devotion',
+    '/journal': 'app.journal', '/settings': 'app.settings',
+  };
+  const pageTitle = strings[pageTitleKey[unlocalized] || 'seo.title'] || strings['seo.title'] || 'Biblesyn';
+  const languages: Record<string, string> = {};
+  for (const code of routing.locales) languages[code] = '/' + code + suffix;
+  languages['x-default'] = '/en' + suffix;
+
+  return {
+    metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'https://blui.online'),
+    title: {default: pageTitle, template: '%s · Biblesyn'},
+    description: strings['seo.description'] || 'Understand the Word. Strengthen Your Spirit.',
+    alternates: {canonical: '/' + locale + suffix, languages},
+    openGraph: {
+      siteName: 'Biblesyn',
+      type: 'website',
+      title: pageTitle,
+      description: strings['seo.description'] || 'Understand the Word. Strengthen Your Spirit.',
+      url: '/' + locale + suffix,
+    },
+  };
+}
+
+export default async function LocaleLayout({
+  children,
+  params,
+}: {
+  children: React.ReactNode;
+  params: {locale: string};
+}) {
+  const locale = params.locale;
+  if (!routing.locales.includes(locale as (typeof routing.locales)[number])) notFound();
+  const strings = await getStrings(locale);
+  return (
+    <html lang={locale} style={{'--font-display': "'Bricolage Grotesque'", '--font-body': "'Figtree'"} as React.CSSProperties}>
+      <head>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@700;800&family=Figtree:wght@400;600;700;800&display=swap" rel="stylesheet" />
+      </head>
+      <body className="min-h-screen antialiased">
+        <div className="mx-auto flex max-w-6xl justify-end px-4 pt-3"><LocaleSwitcher /></div>
+        <NextIntlClientProvider>
+          <I18nProvider strings={strings} locale={locale}>{children}</I18nProvider>
+        </NextIntlClientProvider>
+        <Suspense fallback={null}><VisitorTracker /></Suspense>
+        <footer className="mx-auto flex max-w-6xl flex-col items-center gap-3 px-4 py-5 text-center text-xs text-mute"><LocaleSwitcher /><span>© Biblesyn · Entenda a Palavra. Fortaleça seu Espírito.</span></footer>
+      </body>
+    </html>
+  );
+}

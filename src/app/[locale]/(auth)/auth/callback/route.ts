@@ -1,0 +1,65 @@
+import {createServerClient, type CookieOptions} from '@supabase/ssr';
+import {NextResponse} from 'next/server';
+import {cookies} from 'next/headers';
+
+export async function GET(req: Request, {params}: {params: {locale: string}}) {
+  const url = new URL(req.url);
+  const locale = params.locale;
+  const requestedNext = url.searchParams.get('next') || '/' + locale + '/home';
+  const safeNext = requestedNext.startsWith('/' + locale + '/') && !requestedNext.startsWith('//')
+    ? requestedNext
+    : '/' + locale + '/home';
+  const code = url.searchParams.get('code');
+  const cookieStore = cookies();
+
+  if (!code) return NextResponse.redirect(new URL('/' + locale + '/login?auth_error=google_callback_failed', url.origin));
+
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        getAll: () => cookieStore.getAll(),
+        setAll(items: {name: string; value: string; options: CookieOptions}[]) {
+          items.forEach(({name, value, options}) => cookieStore.set(name, value, options));
+        },
+      },
+    },
+  );
+
+  const {data: authData, error: exchangeError} = await supabase.auth.exchangeCodeForSession(code);
+  const user = authData?.user;
+  if (exchangeError || !user || !authData.session) {
+    const failed = NextResponse.redirect(new URL('/' + locale + '/login?auth_error=google_callback_failed', url.origin));
+    failed.headers.set('Cache-Control', 'no-store, max-age=0');
+    return failed;
+  }
+
+  const {data: profile} = await supabase.from('profiles')
+    .select('locale,country,font_family,font_size').eq('id', user.id).maybeSingle();
+  const opt = {path: '/', maxAge: 31536000, sameSite: 'lax' as const};
+  const countryCookie = cookieStore.get('NEXT_COUNTRY')?.value || cookieStore.get('country')?.value;
+  const localeCookie = cookieStore.get('NEXT_LOCALE')?.value || locale;
+  const updates: Record<string, string> = {};
+  if (countryCookie && profile?.country !== countryCookie.toUpperCase()) updates.country = countryCookie.toUpperCase();
+  if (localeCookie && profile?.locale !== localeCookie) updates.locale = localeCookie;
+  if (Object.keys(updates).length) await supabase.from('profiles').update(updates).eq('id', user.id);
+
+  const finalLocale = localeCookie || profile?.locale || locale;
+  const finalCountry = (countryCookie || profile?.country || '').toUpperCase();
+  cookieStore.set('NEXT_LOCALE', finalLocale, opt);
+  if (finalCountry) {
+    cookieStore.set('NEXT_COUNTRY', finalCountry, opt);
+    cookieStore.set('country', finalCountry, opt);
+  }
+  if (profile) cookieStore.set('reader', JSON.stringify({f: profile.font_family, s: profile.font_size}), opt);
+
+  const response = NextResponse.redirect(new URL(safeNext, url.origin));
+  response.cookies.set('NEXT_LOCALE', finalLocale, opt);
+  if (finalCountry) {
+    response.cookies.set('NEXT_COUNTRY', finalCountry, opt);
+    response.cookies.set('country', finalCountry, opt);
+  }
+  response.headers.set('Cache-Control', 'no-store, max-age=0');
+  return response;
+}

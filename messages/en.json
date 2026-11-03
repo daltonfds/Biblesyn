@@ -1,0 +1,207 @@
+{
+  "nav": {
+    "home": "Home",
+    "library": "Library",
+    "plans": "Plans",
+    "assistant": "Assistant",
+    "you": "You"
+  },
+  "greet": {
+    "morning": "Good morning",
+    "afternoon": "Good afternoon",
+    "evening": "Good evening"
+  },
+  "home": {
+    "today": "Today",
+    "streak": "{n}-day streak",
+    "devotion": "Daily devotion",
+    "continue": "Continue your plan",
+    "day_of": "Day {n} of {total}",
+    "from_library": "From the library",
+    "empty": "Content is coming soon."
+  },
+  "common": {
+    "read": "Read",
+    "listen": "Listen",
+    "read_listen": "Read & Listen",
+    "min": "{n} min",
+    "read_or_listen": "Read or listen",
+    "login": "Log in",
+    "close": "Close",
+    "back": "Back",
+    "free": "Free"
+  },
+  "auth": {
+    "create_title": "Create your account",
+    "create_sub": "Save your progress, journal and favorites.",
+    "welcome_back": "Welcome back",
+    "tagline": "Understand the Word. Strengthen Your Spirit.",
+    "email": "Email",
+    "password": "Password",
+    "country": "Country",
+    "language": "Language",
+    "create_btn": "Create account",
+    "login_btn": "Log in",
+    "or": "or",
+    "google": "Continue with Google",
+    "have_account": "Already have an account?",
+    "new_here": "New here?",
+    "create_link": "Create an account",
+    "guest": "Continue without an account",
+    "check_email": "Check your email to confirm your account."
+  },
+  "gate": {
+    "title": "Create a free account to keep reading",
+    "title_plan": "Create a free account to start this plan",
+    "title_listen": "Create a free account to listen",
+    "sub": "Browse freely. An account unlocks full articles, audio, plans and your journal.",
+    "member": "Already a member?"
+  },
+  "lib": {
+    "title": "Spiritual Library",
+    "search": "Search topics, verses, questions",
+    "all": "All",
+    "empty": "Nothing found."
+  },
+  "art": {
+    "unlock": "Unlock the full library",
+    "see_premium": "See Premium",
+    "listening": "Listening mode. Press play below.",
+    "save": "Save",
+    "unsave": "Remove from saved",
+    "reading_mode": "Reading mode",
+    "seek": "Seek"
+  },
+  "plans": {
+    "title": "Study Plans",
+    "streak": "Day streak",
+    "done": "Plans done",
+    "notes": "Journal notes",
+    "in_progress": "In progress",
+    "continue_day": "Continue Day {n}",
+    "explore": "Explore plans",
+    "days": "{n} days",
+    "mark": "Mark complete",
+    "completed": "Completed",
+    "progress": "{done} of {total} days complete",
+    "more_premium": "More days unlock with Premium.",
+    "day": "Day {n}"
+  },
+  "asst": {
+    "title": "Bible Assistant",
+    "sub": "Answers grounded in Scripture",
+    "placeholder": "Ask about a verse or a doubt",
+    "compare": "Compare views",
+    "related": "Related studies",
+    "compare_q": "Compare the main Christian views on this.",
+    "related_q": "Suggest related studies and passages.",
+    "login": "Please log in to ask questions.",
+    "premium_only": "The assistant is part of Premium.",
+    "error": "Something went wrong. Try again.",
+    "thinking": "Thinking…",
+    "starter_title": "Ask anything about the Bible.",
+    "send": "Send",
+    "s1": "Why did God test Abraham?",
+    "s2": "How do I pray when I feel nothing?",
+    "s3": "What does Romans 8:28 really mean?"
+  },
+  "journal": {
+    "title": "Journal",
+    "reflection": "Today's reflection",
+    "prompt": "Where did you sense God's presence today?",
+    "write": "Write an entry",
+    "save": "Save entry",
+    "verse_ph": "Verse (optional), e.g. Psalm 46:10",
+    "entries": "Entries",
+    "goals": "Goals",
+    "saved": "Saved",
+    "goal_ph": "A spiritual goal",
+    "saved_empty": "Saved articles appear here.",
+    "delete": "Delete",
+    "go_premium": "Go Premium",
+    "premium_member": "Premium member",
+    "settings": "Settings",
+    "logout": "Log out"
+  },
+  "premium": {
+    "label": "Premium",
+    "title": "One plan. The whole experience.",
+    "f1": "Full Spiritual Library",
+    "f2": "Bible AI Assistant",
+    "f3": "All study plans",
+    "f4": "Audio for every study",
+    "f5": "Journal and growth dashboard",
+    "monthly": "Monthly",
+    "cancel_anytime": "Cancel anytime",
+    "per_month": "/mo",
+    "price_for": "Price for {country}",
+    "change": "Change country",
+    "subscribe": "Subscribe · {price}/month",
+    "create_to_subscribe": "Create account to subscribe",
+    "not_now": "Not now",
+    "secure": "Checkout is handled securely by our payment provider. Billing is managed externally.",
+    "discount": "Save {percent}%"
+  },
+  "share": {
+    "title": "Share",
+    "copy": "Copy link",
+    "copied": "Link copied",
+    "more": "More options"
+  },
+  "settings": {
+    "title": "Settings",
+    "language": "Language",
+    "country": "Country",
+    "country_hint": "Your country sets the plan price and currency.",
+    "reading": "Reading",
+    "typeface": "Typeface",
+    "size": "Text size",
+    "serif": "Serif",
+    "sans": "Sans",
+    "classic": "Classic",
+    "save": "Save",
+    "saved": "Saved",
+    "manage_sub": "Manage subscription",
+    "sample": "Aa"
+  },
+  "account": {
+    "suspended": "Your account is suspended.",
+    "logout": "Log out"
+  },
+  "seo": {
+    "title": "Biblesyn — Understand the Word. Strengthen Your Spirit.",
+    "description": "Biblical understanding, daily devotionals and study plans to strengthen your spiritual journey.",
+    "home": "Home",
+    "offer": "Private offer",
+    "premium": "Premium",
+    "login": "Log in",
+    "signup": "Create account"
+  },
+  "landing": {
+    "title": "Understand the Word. Strengthen Your Spirit.",
+    "description": "Biblical understanding, daily devotionals and study plans to strengthen your spiritual journey.",
+    "cta": "Start your journey"
+  },
+  "paywall": {
+    "title": "Your complete spiritual growth experience",
+    "description": "Unlock the full spiritual library, Bible assistant, study plans and audio.",
+    "cta": "Subscribe to Premium"
+  },
+  "emails": {
+    "subscription_subject": "Your Biblesyn Premium access is ready",
+    "subscription_heading": "Welcome to Biblesyn Premium",
+    "subscription_body": "Your subscription has been confirmed. You can now continue your journey with the complete spiritual library, study plans and Bible assistant.",
+    "subscription_cta": "Open Biblesyn"
+  },
+  "app": {
+    "title": "Biblesyn app",
+    "description": "Your personal space for biblical study and spiritual growth.",
+    "home": "Home",
+    "library": "Library",
+    "plans": "Study plans",
+    "assistant": "Bible assistant",
+    "devotion": "Devotion",
+    "journal": "Journal",
+    "settings": "Settings"
+  }
+}

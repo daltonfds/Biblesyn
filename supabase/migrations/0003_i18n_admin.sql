@@ -1,4 +1,4 @@
--- Biblesyn 0003: languages, countries, per-language content, UI strings, roles, subscriptions, payments.
+-- Biblesyn 0003: languages, countries, per-language content, UI strings, roles and provider-neutral premium state.
 -- Removes the sample content seeded in 0001: all content is now managed by admins in /admin.
 delete from public.article_bodies; delete from public.articles; delete from public.study_plan_days; delete from public.study_plans; delete from public.devotions;
 
@@ -13,7 +13,9 @@ insert into public.countries (code, name, default_locale) values ('PT','Portugal
 
 alter table public.profiles add column email text, add column role text not null default 'user' check (role in ('user','editor','admin')), add column suspended boolean not null default false,
   add column font_family text not null default 'serif' check (font_family in ('serif','sans','classic')), add column font_size int not null default 19 check (font_size between 15 and 28),
-  add column premium_source text check (premium_source in ('stripe','admin'));
+  add column premium_source text check (premium_source in ('escalepay','manual','admin')),
+  add column premium_expires_at timestamptz, add column premium_country text, add column premium_currency text,
+  add column premium_provider text, add column premium_order_id text, add column premium_status text;
 update public.profiles p set email = u.email from auth.users u where u.id = p.id;
 create or replace function public.handle_new_user() returns trigger language plpgsql security definer set search_path = public as $$
 begin
@@ -36,17 +38,12 @@ alter table public.study_plans add constraint study_plans_slug_locale unique (sl
 alter table public.devotions add column locale text not null default 'en' references public.languages(code) on update cascade;
 alter table public.devotions drop constraint devotions_pkey; alter table public.devotions add primary key (day, locale);
 
-create table public.subscriptions (id uuid primary key default gen_random_uuid(), user_id uuid not null references public.profiles(id) on delete cascade, stripe_subscription_id text unique not null, stripe_customer_id text,
-  status text not null, currency text, amount_cents int, country text, current_period_end timestamptz, cancel_at_period_end boolean not null default false, created_at timestamptz not null default now(), updated_at timestamptz not null default now());
-create table public.payments (id uuid primary key default gen_random_uuid(), user_id uuid references public.profiles(id) on delete set null, stripe_invoice_id text unique not null, currency text not null, amount_cents int not null, country text, paid_at timestamptz not null default now(), refunded boolean not null default false);
-
 alter table public.languages enable row level security; alter table public.countries enable row level security; alter table public.ui_strings enable row level security;
-alter table public.topics enable row level security; alter table public.topic_names enable row level security; alter table public.subscriptions enable row level security; alter table public.payments enable row level security;
+alter table public.topics enable row level security; alter table public.topic_names enable row level security;
 create policy "languages read" on public.languages for select to anon, authenticated using (active);
 create policy "countries read" on public.countries for select to anon, authenticated using (active);
 create policy "strings read" on public.ui_strings for select to anon, authenticated using (true);
 create policy "topics read" on public.topics for select to anon, authenticated using (true);
 create policy "topic names read" on public.topic_names for select to anon, authenticated using (true);
-create policy "own subscriptions" on public.subscriptions for select to authenticated using (user_id = (select auth.uid()));
-create index on public.subscriptions (user_id); create index on public.payments (user_id); create index on public.payments (paid_at); create index on public.topic_names (locale); create index on public.ui_strings (locale);
+create index on public.topic_names (locale); create index on public.ui_strings (locale);
 create index on public.articles (topic_id); create index on public.profiles (country); create index on public.profiles (role);

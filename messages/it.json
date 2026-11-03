@@ -1,0 +1,207 @@
+{
+  "nav": {
+    "home": "Home",
+    "library": "Biblioteca",
+    "plans": "Piani",
+    "assistant": "Assistente",
+    "you": "Profilo"
+  },
+  "greet": {
+    "morning": "Buongiorno",
+    "afternoon": "Buon pomeriggio",
+    "evening": "Buonasera"
+  },
+  "home": {
+    "today": "Oggi",
+    "streak": "Serie di {n} giorni",
+    "devotion": "Devozionale quotidiano",
+    "continue": "Continua il tuo piano",
+    "day_of": "Giorno {n} di {total}",
+    "from_library": "Dalla biblioteca",
+    "empty": "Nuovi contenuti in arrivo."
+  },
+  "common": {
+    "read": "Leggi",
+    "listen": "Ascolta",
+    "read_listen": "Leggi e ascolta",
+    "min": "{n} min",
+    "read_or_listen": "Leggi o ascolta",
+    "login": "Accedi",
+    "close": "Chiudi",
+    "back": "Indietro",
+    "free": "Gratis"
+  },
+  "auth": {
+    "create_title": "Crea il tuo account",
+    "create_sub": "Salva i tuoi progressi, il diario e i preferiti.",
+    "welcome_back": "Bentornato",
+    "tagline": "Comprendi la Parola. Rafforza il tuo spirito.",
+    "email": "E-mail",
+    "password": "Password",
+    "country": "Paese",
+    "language": "Lingua",
+    "create_btn": "Crea account",
+    "login_btn": "Accedi",
+    "or": "oppure",
+    "google": "Continua con Google",
+    "have_account": "Hai già un account?",
+    "new_here": "Sei nuovo qui?",
+    "create_link": "Crea un account",
+    "guest": "Continua senza account",
+    "check_email": "Controlla la tua e-mail per confermare l'account."
+  },
+  "gate": {
+    "title": "Crea un account gratuito per continuare a leggere",
+    "title_plan": "Crea un account gratuito per iniziare questo piano",
+    "title_listen": "Crea un account gratuito per ascoltare",
+    "sub": "Esplora liberamente. Un account sblocca articoli completi, audio, piani e il tuo diario.",
+    "member": "Hai già un account?"
+  },
+  "lib": {
+    "title": "Biblioteca spirituale",
+    "search": "Cerca argomenti, versetti e domande",
+    "all": "Tutti",
+    "empty": "Nessun risultato."
+  },
+  "art": {
+    "unlock": "Sblocca l'intera biblioteca",
+    "see_premium": "Scopri Premium",
+    "listening": "Modalità ascolto. Premi play qui sotto.",
+    "save": "Salva",
+    "unsave": "Rimuovi dai salvati",
+    "reading_mode": "Modalità lettura",
+    "seek": "Avanti"
+  },
+  "plans": {
+    "title": "Piani di studio",
+    "streak": "Giorni consecutivi",
+    "done": "Piani completati",
+    "notes": "Note del diario",
+    "in_progress": "In corso",
+    "continue_day": "Continua dal giorno {n}",
+    "explore": "Esplora i piani",
+    "days": "{n} giorni",
+    "mark": "Segna come completato",
+    "completed": "Completato",
+    "progress": "{done} di {total} giorni completati",
+    "more_premium": "Altri giorni si sbloccano con Premium.",
+    "day": "Giorno {n}"
+  },
+  "asst": {
+    "title": "Assistente biblico",
+    "sub": "Risposte fondate sulle Scritture",
+    "placeholder": "Chiedi di un versetto o di un dubbio",
+    "compare": "Confronta le prospettive",
+    "related": "Studi correlati",
+    "compare_q": "Confronta le principali prospettive cristiane su questo tema.",
+    "related_q": "Suggerisci studi e passi correlati.",
+    "login": "Accedi per porre domande.",
+    "premium_only": "L'assistente è incluso in Premium.",
+    "error": "Si è verificato un errore. Riprova.",
+    "thinking": "Sto pensando…",
+    "starter_title": "Chiedi qualsiasi cosa sulla Bibbia.",
+    "send": "Invia",
+    "s1": "Perché Dio mise alla prova Abramo?",
+    "s2": "Come posso pregare quando non provo nulla?",
+    "s3": "Che cosa significa davvero Romani 8:28?"
+  },
+  "journal": {
+    "title": "Diario",
+    "reflection": "Riflessione di oggi",
+    "prompt": "Dove hai percepito oggi la presenza di Dio?",
+    "write": "Scrivi una nota",
+    "save": "Salva nota",
+    "verse_ph": "Versetto (facoltativo), es.: Salmo 46:10",
+    "entries": "Note",
+    "goals": "Obiettivi",
+    "saved": "Salvati",
+    "goal_ph": "Un obiettivo spirituale",
+    "saved_empty": "Gli articoli salvati appariranno qui.",
+    "delete": "Elimina",
+    "go_premium": "Passa a Premium",
+    "premium_member": "Membro Premium",
+    "settings": "Impostazioni",
+    "logout": "Esci"
+  },
+  "premium": {
+    "label": "Premium",
+    "title": "Un piano. L'esperienza completa.",
+    "f1": "Biblioteca spirituale completa",
+    "f2": "Assistente biblico AI",
+    "f3": "Tutti i piani di studio",
+    "f4": "Audio per ogni studio",
+    "f5": "Diario e dashboard di crescita",
+    "monthly": "Mensile",
+    "cancel_anytime": "Annulla quando vuoi",
+    "per_month": "/mese",
+    "price_for": "Prezzo per {country}",
+    "change": "Cambia paese",
+    "subscribe": "Abbonati · {price}/mese",
+    "create_to_subscribe": "Crea un account per abbonarti",
+    "not_now": "Non ora",
+    "secure": "Il pagamento viene elaborato in modo sicuro tramite la nostra piattaforma di pagamento.",
+    "discount": "Risparmia il {percent}%"
+  },
+  "share": {
+    "title": "Condividi",
+    "copy": "Copia link",
+    "copied": "Link copiato",
+    "more": "Altre opzioni"
+  },
+  "settings": {
+    "title": "Impostazioni",
+    "language": "Lingua",
+    "country": "Paese",
+    "country_hint": "Il tuo paese determina il prezzo e la valuta del piano.",
+    "reading": "Lettura",
+    "typeface": "Carattere",
+    "size": "Dimensione del testo",
+    "serif": "Con grazie",
+    "sans": "Senza grazie",
+    "classic": "Classico",
+    "save": "Salva",
+    "saved": "Salvato",
+    "manage_sub": "Gestisci abbonamento",
+    "sample": "Aa"
+  },
+  "account": {
+    "suspended": "Il tuo account è sospeso.",
+    "logout": "Esci"
+  },
+  "seo": {
+    "title": "Biblesyn — Comprendi la Parola. Rafforza il tuo spirito.",
+    "description": "Studio biblico, devozionali quotidiani e piani per rafforzare il tuo cammino spirituale.",
+    "home": "Home",
+    "offer": "Offerta speciale",
+    "premium": "Premium",
+    "login": "Accedi",
+    "signup": "Crea account"
+  },
+  "landing": {
+    "title": "Comprendi la Parola. Rafforza il tuo spirito.",
+    "description": "Studio biblico, devozionali quotidiani e piani per rafforzare il tuo cammino spirituale.",
+    "cta": "Inizia il tuo percorso"
+  },
+  "paywall": {
+    "title": "L’esperienza completa per la tua crescita spirituale",
+    "description": "Sblocca la biblioteca spirituale, l’assistente biblico, i piani di studio e i contenuti audio.",
+    "cta": "Abbonati a Premium"
+  },
+  "emails": {
+    "subscription_subject": "Il tuo accesso a Biblesyn Premium è pronto",
+    "subscription_heading": "Benvenuto in Biblesyn Premium",
+    "subscription_body": "Il tuo abbonamento è stato confermato. Ora puoi accedere alla biblioteca spirituale completa, ai piani di studio e all’assistente biblico.",
+    "subscription_cta": "Apri Biblesyn"
+  },
+  "app": {
+    "title": "App Biblesyn",
+    "description": "Il tuo spazio personale per lo studio biblico e la crescita spirituale.",
+    "home": "Home",
+    "library": "Biblioteca",
+    "plans": "Piani di studio",
+    "assistant": "Assistente biblico",
+    "devotion": "Devozionale",
+    "journal": "Diario",
+    "settings": "Impostazioni"
+  }
+}

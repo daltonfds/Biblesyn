@@ -1,0 +1,33 @@
+name: Verify i18n and billing branch
+on:
+  push:
+    branches: [feat/i18n-7-locales]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      NEXT_PUBLIC_SUPABASE_URL: https://example.supabase.co
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: test-anon-key
+      SUPABASE_SERVICE_ROLE_KEY: test-service-role-key
+      NEXT_PUBLIC_SITE_URL: https://blui.online
+      ESCALEPAY_WEBHOOK_SECRET: test-webhook-secret
+      RESEND_API_KEY: re_placeholder
+      RESEND_FROM_EMAIL: Biblesyn <no-reply@example.com>
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - run: npm install --no-audit --no-fund
+      - name: Validate translation keys
+        run: npm run validate:messages
+      - name: Country offer tests
+        run: npm run test:offers
+      - name: TypeScript
+        run: npx tsc --noEmit
+      - name: Next.js production build
+        run: npm run build
