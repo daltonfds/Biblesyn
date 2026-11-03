@@ -2,54 +2,27 @@ import createMiddleware from 'next-intl/middleware';
 import {createServerClient, type CookieOptions} from '@supabase/ssr';
 import {NextResponse, type NextRequest} from 'next/server';
 import {routing} from './i18n/routing';
+import {resolveRequestContext} from './lib/request-context';
 
 const handleI18nRouting = createMiddleware(routing);
 const SUPPORTED = new Set<string>(routing.locales);
-
-const COUNTRY_LOCALE: Record<string, string> = {
-  BR: 'pt-BR',
-  PT: 'pt-PT', AO: 'pt-PT', MZ: 'pt-PT', CV: 'pt-PT',
-  FR: 'fr', BE: 'fr', CH: 'fr', LU: 'fr',
-  ES: 'es', MX: 'es', AR: 'es', CO: 'es', CL: 'es', PE: 'es',
-  IT: 'it', SM: 'it', VA: 'it',
-  ZA: 'en-ZA',
-  US: 'en', GB: 'en', CA: 'en', AU: 'en',
-};
-
-function acceptLanguageLocale(header: string | null): string | null {
-  if (!header) return null;
-  const candidates = header.split(',').map((part, index) => {
-    const [tag, ...params] = part.trim().split(';');
-    const q = Number(params.find(p => p.trim().startsWith('q='))?.trim().slice(2) ?? 1);
-    return {tag: tag.replace('_', '-').toLowerCase(), q, index};
-  }).filter(x => x.q > 0).sort((a, b) => b.q - a.q || a.index - b.index);
-
-  for (const candidate of candidates) {
-    const exact = routing.locales.find(locale => locale.toLowerCase() === candidate.tag);
-    if (exact) return exact;
-    const language = candidate.tag.split('-')[0];
-    if (language === 'en') return 'en';
-    const regional = routing.locales.find(locale => locale.toLowerCase().startsWith(language + '-'));
-    if (regional) return regional;
-    if (SUPPORTED.has(language)) return language;
-  }
-  return null;
-}
-
-function detectLocale(req: NextRequest): string {
-  const manual = req.cookies.get('NEXT_LOCALE')?.value;
-  if (manual && SUPPORTED.has(manual)) return manual;
-  const country = (req.cookies.get('NEXT_COUNTRY')?.value || req.cookies.get('country')?.value || process.env.NEXT_COUNTRY || req.headers.get('x-vercel-ip-country') || '').toUpperCase();
-  return COUNTRY_LOCALE[country] || acceptLanguageLocale(req.headers.get('accept-language')) || 'en';
-}
 
 export async function middleware(req: NextRequest) {
   const pathname = req.nextUrl.pathname;
   if (pathname.startsWith('/api/') || pathname.startsWith('/_next/')) return NextResponse.next();
 
+  const ipCountry = req.headers.get('x-vercel-ip-country');
+  const devOverride = process.env.VERCEL_ENV !== 'production';
+  const context = resolveRequestContext({
+    ipCountry,
+    manualLocale: req.cookies.get('NEXT_LOCALE')?.value,
+    acceptLanguage: req.headers.get('accept-language'),
+    overrideCountry: devOverride ? req.nextUrl.searchParams.get('country') : null,
+    cookieCountry: devOverride ? (req.cookies.get('NEXT_COUNTRY')?.value || req.cookies.get('country')?.value) : null,
+    environment: process.env.VERCEL_ENV,
+  });
+  const locale = context.locale;
   const firstSegment = pathname.split('/')[1];
-  const pathLocale = SUPPORTED.has(firstSegment) ? firstSegment : null;
-  const locale = pathLocale || detectLocale(req);
   if (SUPPORTED.has(firstSegment) && firstSegment !== locale) {
     const target = req.nextUrl.clone();
     target.pathname = pathname.replace(new RegExp('^/' + firstSegment + '(?=/|$)'), '/' + locale);
@@ -57,15 +30,18 @@ export async function middleware(req: NextRequest) {
   }
 
   req.headers.set('x-biblesyn-path', pathname);
-  if (!req.cookies.get('NEXT_LOCALE')) req.cookies.set('NEXT_LOCALE', locale);
+  req.cookies.set('NEXT_LOCALE', locale);
 
   const intlResponse = handleI18nRouting(req);
   const cookieOptions = {path: '/', maxAge: 31536000, sameSite: 'lax' as const};
   intlResponse.cookies.set('NEXT_LOCALE', locale, cookieOptions);
-  const detectedCountry = (req.cookies.get('NEXT_COUNTRY')?.value || req.cookies.get('country')?.value || process.env.NEXT_COUNTRY || req.headers.get('x-vercel-ip-country') || '').toUpperCase();
-  if (/^[A-Z]{2}$/.test(detectedCountry)) {
-    intlResponse.cookies.set('NEXT_COUNTRY', detectedCountry, cookieOptions);
-    intlResponse.cookies.set('country', detectedCountry, cookieOptions);
+  if (context.country) {
+    intlResponse.cookies.set('NEXT_COUNTRY', context.country, cookieOptions);
+    intlResponse.cookies.set('country', context.country, cookieOptions);
+  } else {
+    // A missing IP header must never leave a stale production country cookie behind.
+    intlResponse.cookies.delete('NEXT_COUNTRY');
+    intlResponse.cookies.delete('country');
   }
 
   if (/^\/[a-zA-Z-]+\/auth\/callback(?:\/|$)/.test(pathname)) return intlResponse;
