@@ -29,7 +29,7 @@ export function getOfferByCheckoutId(checkoutId?: string | number | null): {coun
   for (const [country, offer] of Object.entries(OFFERS)) {
     if (!isCheckoutConfigured(offer)) continue;
     try {
-      if (new URL(offer.checkoutUrl).pathname.replace(/\\/+$/, '').split('/').pop() === id) {
+      if (new URL(offer.checkoutUrl).pathname.split('/').filter(Boolean).pop() === id) {
         return {country, offer};
       }
     } catch { /* Invalid URLs are treated as unconfigured. */ }
