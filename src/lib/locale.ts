@@ -1,6 +1,7 @@
 import {cache} from 'react';
 import {cookies, headers} from 'next/headers';
 import {supabaseServer} from '@/lib/supabase/server';
+import {resolveRequestContext} from '@/lib/request-context';
 
 export const FONTS = ['serif', 'sans', 'classic'] as const;
 const SUPPORTED_LOCALES = ['en', 'en-ZA', 'pt-BR', 'pt-PT', 'fr', 'es', 'it'] as const;
@@ -48,23 +49,26 @@ export const getCountries = cache(async () => {
   return [...merged.values()].sort((a,b) => a.name.localeCompare(b.name));
 });
 export const getLocale = cache(async (): Promise<string> => {
-  const manual = supportedLocale(cookies().get('NEXT_LOCALE')?.value || cookies().get('locale')?.value);
-  if (manual) return manual;
-
-  const country = (getCountryCookie() || process.env.NEXT_COUNTRY || headers().get('x-vercel-ip-country') || '').toUpperCase();
-  const countryLocale = supportedLocale(COUNTRY_LOCALE[country]);
-  if (countryLocale) return countryLocale;
-
-  const browser = headers().get('accept-language')?.split(',')[0]?.split(';')[0];
-  return supportedLocale(browser) || 'en';
+  const cookieCountry = cookies().get('NEXT_COUNTRY')?.value || cookies().get('country')?.value;
+  const context = resolveRequestContext({
+    ipCountry: headers().get('x-vercel-ip-country'),
+    manualLocale: cookies().get('NEXT_LOCALE')?.value || cookies().get('locale')?.value,
+    acceptLanguage: headers().get('accept-language'),
+    cookieCountry: process.env.VERCEL_ENV !== 'production' ? cookieCountry : null,
+    environment: process.env.VERCEL_ENV,
+  });
+  return context.locale;
 });
 
 export function getCountryCookie(): string {
-  return (cookies().get('NEXT_COUNTRY')?.value || cookies().get('country')?.value || '').trim().toUpperCase();
+  if (process.env.VERCEL_ENV === 'production') {
+    return (headers().get('x-vercel-ip-country') || '').trim().toUpperCase();
+  }
+  return (cookies().get('NEXT_COUNTRY')?.value || cookies().get('country')?.value || headers().get('x-vercel-ip-country') || '').trim().toUpperCase();
 }
 
 export function getCountry(): string {
-  return getCountryCookie() || (process.env.NEXT_COUNTRY || headers().get('x-vercel-ip-country') || '').trim().toUpperCase();
+  return getCountryCookie();
 }
 
 export function getReaderPrefs(): {f: string; s: number} {
