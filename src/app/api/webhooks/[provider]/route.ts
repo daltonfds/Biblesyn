@@ -110,12 +110,25 @@ export async function POST(request: NextRequest, context: {params: {provider: st
 
     if (action === 'activate') {
       if (!orderId) throw new Error('order_id_missing');
+      const {data: priorPayment} = await db.from('payment_transactions').select('refunded,status')
+        .eq('provider', provider).eq('provider_order_id', orderId).maybeSingle();
+      if (priorPayment?.refunded || priorPayment?.status === 'refunded') {
+        await db.from('payment_webhook_events').update({processing_status: 'ignored', user_id: profile.id})
+          .eq('provider', provider).eq('provider_event_id', eventId);
+        return NextResponse.json({ok: true, processed: false, reason: 'order_already_refunded'});
+      }
+      const now = new Date();
+      const {error: ledgerError} = await db.from('payment_transactions').upsert({
+        provider, provider_order_id: orderId, user_id: profile.id,
+        country: country || profile.country || null, currency: currency || null,
+        amount_cents: amountCents, status: 'paid', refunded: false, paid_at: now.toISOString(), updated_at: now.toISOString(),
+      }, {onConflict: 'provider,provider_order_id'});
+      if (ledgerError) throw new Error('payment_ledger_write_failed');
       if (profile.premium_order_id === orderId && profile.is_premium) {
         await db.from('payment_webhook_events').update({processing_status: 'processed', user_id: profile.id})
           .eq('provider', provider).eq('provider_event_id', eventId);
         return NextResponse.json({ok: true, processed: true, duplicateOrder: true});
       }
-      const now = new Date();
       const previousEnd = profile.premium_expires_at ? new Date(profile.premium_expires_at) : now;
       const base = previousEnd > now ? previousEnd : now;
       const expiry = new Date(base.getTime() + 30 * 24 * 60 * 60 * 1000);
@@ -125,11 +138,6 @@ export async function POST(request: NextRequest, context: {params: {provider: st
         premium_provider: provider, premium_order_id: orderId, premium_source: provider,
       }).eq('id', profile.id);
       if (error) throw new Error('profile_activation_failed');
-      await db.from('payment_transactions').upsert({
-        provider, provider_order_id: orderId, user_id: profile.id,
-        country: country || profile.country || null, currency: currency || null,
-        amount_cents: amountCents, status: 'paid', refunded: false, paid_at: now.toISOString(), updated_at: now.toISOString(),
-      }, {onConflict: 'provider,provider_order_id'});
       await db.from('payment_webhook_events').update({processing_status: 'processed', user_id: profile.id}).eq('provider', provider).eq('provider_event_id', eventId);
       if (profile.email || email) await sendSubscriptionConfirmation(profile.email || email, profile.locale);
       return NextResponse.json({ok: true, processed: true, action, orderId});
