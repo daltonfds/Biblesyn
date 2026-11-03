@@ -91,11 +91,15 @@ export async function middleware(req: NextRequest) {
 
   if (/^\/[a-zA-Z-]+\/auth\/callback(?:\/|$)/.test(pathname)) return privateCache(intlResponse);
 
+  // Public pages must remain available even if Preview/Edge auth configuration
+  // is incomplete or Supabase session validation is temporarily unavailable.
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  if (!supabaseUrl || !supabaseAnonKey) return privateCache(intlResponse);
+
   let authResponse = NextResponse.next({request: req});
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
+  try {
+    const supabase = createServerClient(supabaseUrl, supabaseAnonKey, {
       cookies: {
         getAll: () => req.cookies.getAll(),
         setAll(items: {name: string; value: string; options: CookieOptions}[]) {
@@ -104,15 +108,17 @@ export async function middleware(req: NextRequest) {
           items.forEach(({name, value, options}) => authResponse.cookies.set(name, value, options));
         },
       },
-    },
-  );
-  const {data: {user}} = await supabase.auth.getUser();
-  const localizedPath = pathname.replace(/^\/[a-zA-Z-]+(?=\/|$)/, '') || '/';
-  if (!user && (/^\/journal(?:\/|$)/.test(localizedPath) || /^\/admin(?:\/|$)/.test(localizedPath))) {
-    const target = req.nextUrl.clone();
-    target.pathname = '/' + locale + '/login';
-    target.searchParams.set('next', pathname + req.nextUrl.search);
-    return privateCache(NextResponse.redirect(target));
+    });
+    const {data: {user}} = await supabase.auth.getUser();
+    const localizedPath = pathname.replace(/^\/[a-zA-Z-]+(?=\/|$)/, '') || '/';
+    if (!user && (/^\/journal(?:\/|$)/.test(localizedPath) || /^\/admin(?:\/|$)/.test(localizedPath))) {
+      const target = req.nextUrl.clone();
+      target.pathname = '/' + locale + '/login';
+      target.searchParams.set('next', pathname + req.nextUrl.search);
+      return privateCache(NextResponse.redirect(target));
+    }
+  } catch (error) {
+    console.error('[middleware] Supabase session check failed; continuing with localized response', error);
   }
 
   authResponse.cookies.getAll().forEach(cookie => intlResponse.cookies.set(cookie));
