@@ -1,4 +1,5 @@
-import {routing} from '@/i18n/routing';
+
+const SUPPORTED_LOCALES = ['en', 'en-ZA', 'pt-BR', 'pt-PT', 'fr', 'es', 'it'] as const;
 
 const COUNTRY_LOCALE: Record<string, string> = {
   BR: 'pt-BR', PT: 'pt-PT', AO: 'pt-PT', MZ: 'pt-PT', CV: 'pt-PT',
@@ -16,7 +17,7 @@ export function acceptLanguageLocale(header: string | null | undefined): string 
     return {tag: tag.replace('_', '-').toLowerCase(), q, index};
   }).filter(x => x.q > 0).sort((a, b) => b.q - a.q || a.index - b.index);
   for (const candidate of candidates) {
-    const exact = routing.locales.find(locale => locale.toLowerCase() === candidate.tag);
+    const exact = SUPPORTED_LOCALES.find(locale => locale.toLowerCase() === candidate.tag);
     if (exact) return exact;
     const language = candidate.tag.split('-')[0];
     if (language === 'en') return 'en';
