@@ -2,16 +2,14 @@ import {Link} from '@/i18n/navigation';
 import {Check, Library, Sparkles, CalendarCheck, Headphones, NotebookPen} from 'lucide-react';
 import {getT, getStrings} from '@/lib/i18n';
 import {getCountry, getCountryCookie} from '@/lib/locale';
-import {getOfferPresentation, isCheckoutConfigured} from '@/lib/offer';
+import {getOfferPresentation, isCheckoutConfigured, resolveOfferCountry} from '@/lib/offer';
 import SubscriptionButton from '@/components/SubscriptionButton';
-import {resolveOfferCountry} from '@/lib/offer';
 import {supabaseServer} from '@/lib/supabase/server';
 
 export async function generateMetadata({params}: {params: {locale: string}}) {
   const strings = await getStrings(params.locale);
   return {title: strings['seo.premium'], description: strings['seo.description']};
 }
-const getCountryPresentationCountry = (cookieCountry: string, profileCountry: string, detectedCountry: string) => resolveOfferCountry(cookieCountry || profileCountry || detectedCountry || 'US');
 const FEATURES = [[Library, 'premium.f1'], [Sparkles, 'premium.f2'], [CalendarCheck, 'premium.f3'], [Headphones, 'premium.f4'], [NotebookPen, 'premium.f5']] as const;
 
 export default async function Premium({params}: {params: {locale: string}}) {
@@ -24,7 +22,7 @@ export default async function Premium({params}: {params: {locale: string}}) {
     const {data: profile} = await sb.from('profiles').select('country').eq('id', user.id).maybeSingle();
     profileCountry = profile?.country || '';
   }
-  const country = getCountryPresentationCountry(getCountryCookie(), profileCountry, getCountry());
+  const country = resolveOfferCountry(getCountryCookie() || profileCountry || getCountry() || 'US');
   const {offer, formattedPrice, formattedOldPrice, discountPercent} = getOfferPresentation(locale, country);
   const checkoutAvailable = isCheckoutConfigured(offer) && offer.price > 0;
 
