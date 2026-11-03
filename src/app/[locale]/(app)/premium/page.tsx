@@ -2,7 +2,7 @@ import {Link} from '@/i18n/navigation';
 import {Check, Library, Sparkles, CalendarCheck, Headphones, NotebookPen} from 'lucide-react';
 import {getT, getStrings} from '@/lib/i18n';
 import {getCountry} from '@/lib/locale';
-import {getOffer, isCheckoutConfigured} from '@/lib/offer';
+import {getOffer, getDiscountPercent, isCheckoutConfigured} from '@/lib/offer';
 import SubscriptionButton from '@/components/SubscriptionButton';
 import {supabaseServer} from '@/lib/supabase/server';
 
@@ -29,9 +29,7 @@ export default async function Premium({params}: {params: {locale: string}}) {
   const formattedOldPrice = offer.oldPrice > 0
     ? new Intl.NumberFormat(locale, {style: 'currency', currency: offer.currency}).format(offer.oldPrice)
     : '';
-  const discountPercent = offer.oldPrice > offer.price
-    ? Math.round((1 - offer.price / offer.oldPrice) * 100)
-    : 0;
+  const discountPercent = getDiscountPercent(offer);
 
   return (<div className="px-6 pt-[52px]"><div className="font-serif text-sm font-bold uppercase tracking-[.2em] text-leaf">Biblesyn {t('premium.label')}</div>
     <h1 className="mb-[22px] mt-2 font-serif text-[38px] font-bold leading-[1.05]">{t('premium.title')}</h1>
