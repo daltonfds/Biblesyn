@@ -1,0 +1,79 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import path from 'node:path';
+import vm from 'node:vm';
+import ts from 'typescript';
+
+const root = new URL('../', import.meta.url);
+const source = fs.readFileSync(new URL('../src/lib/offer.ts', import.meta.url), 'utf8');
+const js = ts.transpileModule(source, {compilerOptions: {module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2020}}).outputText;
+const module = {exports: {}};
+vm.runInNewContext(js, {module, exports: module.exports, URL});
+const {getOfferPresentation, buildOfferCheckoutUrl} = module.exports;
+
+const readMessages = locale => JSON.parse(fs.readFileSync(new URL('../messages/' + locale + '.json', import.meta.url), 'utf8'));
+const merge = (base, override) => {
+  const result = {...base};
+  for (const [key, value] of Object.entries(override)) {
+    result[key] = value && typeof value === 'object' && !Array.isArray(value)
+      ? merge(result[key] || {}, value)
+      : value;
+  }
+  return result;
+};
+const messagesFor = locale => locale === 'en-ZA'
+  ? merge(readMessages('en.json'), readMessages('en-ZA.json'))
+  : readMessages(locale);
+const clean = value => value.replace(/[\u00a0\u202f]/g, ' ').replace(/\s+/g, ' ').trim();
+
+const cases = [
+  {locale:'pt-BR',country:'BR',current:'R$ 5,90',old:'R$ 17,00',discount:65,id:'9630961',cta:'Assinar'},
+  {locale:'pt-PT',country:'PT',current:'1,00 €',old:'5,00 €',discount:80,id:'3788940',cta:'Subscrever'},
+  {locale:'it',country:'IT',current:'1,00 €',old:'5,00 €',discount:80,id:'3788940',cta:'Abbonati'},
+  {locale:'en-ZA',country:'ZA',current:'R 17,00',old:'R 80,00',discount:79,id:'9787366',cta:'Subscribe'},
+  {locale:'en',country:'US',current:'US$1.00',old:'US$5.00',discount:80,id:'4998831',cta:'Subscribe'},
+  {locale:'pt-PT',country:'US',current:'1,00 US$',old:'5,00 US$',discount:80,id:'4998831',cta:'Subscrever'},
+  {locale:'pt-BR',country:'PT',current:'€ 1,00',old:'€ 5,00',discount:80,id:'3788940',cta:'Assinar'},
+  {locale:'it',country:'US',current:'1,00 USD',old:'5,00 USD',discount:80,id:'4998831',cta:'Abbonati'},
+  {locale:'en',country:'XX',current:'US$1.00',old:'US$5.00',discount:80,id:'4998831',cta:'Subscribe'},
+];
+
+for (const item of cases) {
+  test('localized offer render model: ' + item.locale + ' / ' + item.country, () => {
+    const view = getOfferPresentation(item.locale, item.country);
+    assert.equal(view.country, item.country === 'XX' ? 'US' : item.country);
+    assert.equal(clean(view.formattedPrice), item.current);
+    assert.equal(clean(view.formattedOldPrice), item.old);
+    assert.equal(view.discountPercent, item.discount);
+    const checkout = new URL(buildOfferCheckoutUrl(item.locale, item.country, 'user-123', 'buyer@example.com'));
+    assert.equal(checkout.pathname.split('/').pop(), item.id);
+    assert.equal(checkout.searchParams.get('locale'), item.locale);
+    assert.equal(checkout.searchParams.get('country'), item.country === 'XX' ? 'US' : item.country);
+    assert.equal(checkout.searchParams.get('user_id'), 'user-123');
+    assert.equal(checkout.searchParams.get('email'), 'buyer@example.com');
+    const messages = messagesFor(item.locale);
+    const cta = messages.premium.subscribe.replace('{price}', view.formattedPrice);
+    assert.ok(cta.startsWith(item.cta), cta);
+    const discount = messages.premium.discount.replace('{percent}', String(view.discountPercent));
+    assert.match(discount, new RegExp(String(item.discount)));
+  });
+}
+
+test('locale and country cookies survive middleware, auth, preference sync and checkout', () => {
+  const middleware = fs.readFileSync(new URL('../src/middleware.ts', import.meta.url), 'utf8');
+  const callback = fs.readFileSync(new URL('../src/app/[locale]/(auth)/auth/callback/route.ts', import.meta.url), 'utf8');
+  const auth = fs.readFileSync(new URL('../src/components/AuthForm.tsx', import.meta.url), 'utf8');
+  const prefs = fs.readFileSync(new URL('../src/app/api/prefs/route.ts', import.meta.url), 'utf8');
+  const checkout = fs.readFileSync(new URL('../src/app/api/checkout/route.ts', import.meta.url), 'utf8');
+  for (const source of [middleware, callback, auth, prefs]) {
+    assert.match(source, /NEXT_LOCALE/);
+    assert.match(source, /NEXT_COUNTRY/);
+  }
+  assert.match(middleware, /req\.cookies\.get\('NEXT_COUNTRY'\)/);
+  assert.match(callback, /countryCookie = cookieStore\.get\('NEXT_COUNTRY'\)/);
+  assert.match(auth, /post\(\{sync: true, locale\}\)/);
+  assert.match(prefs, /readCookie\('NEXT_COUNTRY'\)/);
+  assert.match(checkout, /getCountryCookie\(\) \|\| profile\?\.country/);
+  assert.match(checkout, /buildOfferCheckoutUrl\(locale, country, user\.id, customerEmail\)/);
+});
