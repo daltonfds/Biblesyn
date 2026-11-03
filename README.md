@@ -5,11 +5,11 @@ Stack: Next.js 14 (App Router, TypeScript), Tailwind, Supabase (Postgres + Auth)
 Country-specific external checkout offers are configured in `src/lib/offer.ts`. The application has no Stripe dependency or Stripe environment variables.
 
 ## Sales landing page
-- `OFFERS.BR`: `https://checkout.escalepay.com/9630961`, R$ 5,90 (antes R$ 17).
-- `OFFERS.US`, `OFFERS.PT`, `OFFERS.IT` e `OFFERS.ZA` têm campos `TODO` para preço e link.
-- Países fora da tabela usam a oferta US. O idioma da página não altera a moeda nem o checkout.
-- Os links externos recebem parâmetros de atribuição (`user_id`, `email`, `locale`, `country` e `external_reference`). O fornecedor precisa preservar esses valores no webhook para associar a compra à conta.
-
+- `src/lib/offer.ts` is the single source of truth for country, currency, current/previous prices and EscalePay checkout URLs.
+- The language (`NEXT_LOCALE`) and country (`NEXT_COUNTRY`) are independent preferences. Explicit localized URLs take priority for language; the country cookie/profile determines the offer and currency.
+- Unknown countries fall back to the US offer. Price formatting and discount calculation are shared by Premium and the Brazil-only private landing page.
+- Checkout URLs receive `user_id`, `email`, `locale`, `country` and `external_reference` attribution parameters.
+- In Vercel Preview, set the `NEXT_COUNTRY` environment variable to a supported two-letter country code, or override it in the browser with `NEXT_COUNTRY=PT` (and optionally `NEXT_LOCALE=pt-PT`). The cookies take priority over deployment geolocation.
 ## No static content
 Everything the user reads in the application is added by admins in `/admin`: articles, study plans, devotions, topics, interface text, languages, countries and prices. The code ships English fallbacks for interface text (`src/lib/i18n-defaults.ts`).
 
