@@ -6,7 +6,8 @@
     "saved_empty": "Saved articles will appear here."
   },
   "premium": {
-    "secure": "Secure payment with Stripe. Renews monthly until cancelled."
+    "secure": "Secure checkout is provided by our payment partner. Billing is managed externally.",
+    "discount": "Save {percent}%"
   },
   "seo": {
     "title": "Biblesyn — Understand the Word. Strengthen Your Spirit.",
