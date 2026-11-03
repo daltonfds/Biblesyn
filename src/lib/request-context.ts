@@ -23,7 +23,7 @@ export function acceptLanguageLocale(header: string | null | undefined): string 
     if (language === 'en') return 'en';
     const regional = SUPPORTED_LOCALES.find(locale => locale.toLowerCase().startsWith(language + '-'));
     if (regional) return regional;
-    if ((routing.locales as readonly string[]).includes(language)) return language;
+    if ((SUPPORTED_LOCALES as readonly string[]).includes(language)) return language;
   }
   return null;
 }
@@ -45,7 +45,7 @@ export function resolveRequestContext(input: {
     ? valid(input.ipCountry)
     : valid(input.overrideCountry) || valid(input.cookieCountry) || valid(input.ipCountry);
   const manual = (input.manualLocale || '').trim();
-  const locale = (routing.locales as readonly string[]).includes(manual)
+  const locale = (SUPPORTED_LOCALES as readonly string[]).includes(manual)
     ? manual
     : (country && COUNTRY_LOCALE[country]) || acceptLanguageLocale(input.acceptLanguage) || 'en';
   const offerCountry = country && ['BR', 'PT', 'IT', 'ZA', 'US'].includes(country) ? country : 'US';
