@@ -9,7 +9,26 @@ const SUPPORTED = new Set<string>(routing.locales);
 
 export async function middleware(req: NextRequest) {
   const pathname = req.nextUrl.pathname;
-  if (pathname.startsWith('/api/') || pathname.startsWith('/_next/')) return NextResponse.next();
+  if (pathname.startsWith('/api/')) {
+    const devOverride = process.env.VERCEL_ENV !== 'production';
+    const context = resolveRequestContext({
+      ipCountry: req.headers.get('x-vercel-ip-country'),
+      overrideCountry: devOverride ? req.nextUrl.searchParams.get('country') : null,
+      cookieCountry: devOverride ? (req.cookies.get('NEXT_COUNTRY')?.value || req.cookies.get('country')?.value) : null,
+      environment: process.env.VERCEL_ENV,
+    });
+    const response = NextResponse.next();
+    const options = {path: '/', maxAge: 31536000, sameSite: 'lax' as const};
+    if (context.country) {
+      response.cookies.set('NEXT_COUNTRY', context.country, options);
+      response.cookies.set('country', context.country, options);
+    } else {
+      response.cookies.delete('NEXT_COUNTRY');
+      response.cookies.delete('country');
+    }
+    return response;
+  }
+  if (pathname.startsWith('/_next/')) return NextResponse.next();
 
   const ipCountry = req.headers.get('x-vercel-ip-country');
   const devOverride = process.env.VERCEL_ENV !== 'production';
