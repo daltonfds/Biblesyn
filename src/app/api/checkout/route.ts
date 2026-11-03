@@ -2,7 +2,7 @@ import {NextResponse} from 'next/server';
 import {supabaseServer} from '@/lib/supabase/server';
 import {getCountry} from '@/lib/locale';
 import {routing} from '@/i18n/routing';
-import {getOffer, isCheckoutConfigured} from '@/lib/offer';
+import {getOffer, isCheckoutConfigured, resolveOfferCountry} from '@/lib/offer';
 
 export async function POST(request: Request) {
   const body = await request.json().catch(() => ({}));
@@ -12,10 +12,10 @@ export async function POST(request: Request) {
   if (!user) return NextResponse.json({error: 'authentication_required'}, {status: 401});
 
   const {data: profile} = await supabase.from('profiles').select('country,email').eq('id', user.id).maybeSingle();
-  const country = (getCountry() || process.env.NEXT_COUNTRY || profile?.country || 'US').toUpperCase();
+  const country = resolveOfferCountry(getCountry() || process.env.NEXT_COUNTRY || profile?.country || 'US');
   const offer = getOffer(country);
   if (!isCheckoutConfigured(offer)) {
-    return NextResponse.json({error: 'checkout_not_configured', country: OFFERS_COUNTRY(country)}, {status: 503});
+    return NextResponse.json({error: 'checkout_not_configured', country}, {status: 503});
   }
 
   // These are attribution hints only. The provider must preserve them in its signed webhook
@@ -28,8 +28,4 @@ export async function POST(request: Request) {
   url.searchParams.set('country', country);
   url.searchParams.set('external_reference', 'biblesyn_' + user.id);
   return NextResponse.json({url: url.toString()});
-}
-
-function OFFERS_COUNTRY(country: string) {
-  return ['BR','US','PT','IT','ZA'].includes(country) ? country : 'US';
 }
