@@ -17,7 +17,7 @@ export default async function Premium({params}: {params: {locale: string}}) {
   const t = await getT();
   const sb = supabaseServer();
   const {data: {user}} = await sb.auth.getUser();
-  let country = getCountry();
+  let country = getCountry() || process.env.NEXT_COUNTRY || '';
   if (!country && user) {
     const {data: profile} = await sb.from('profiles').select('country').eq('id', user.id).maybeSingle();
     country = profile?.country || 'US';
