@@ -160,6 +160,7 @@ export async function POST(request: NextRequest, context: {params: {provider: st
     if (action === 'revoke') {
       const {error} = await db.from('profiles').update({
         is_premium: false, premium_status: norm(event + '_' + status).slice(0, 80),
+        country, premium_country: country, premium_currency: currency,
         premium_provider: provider, premium_order_id: orderId || null,
       }).eq('id', profile.id);
       if (error) throw new Error('profile_revocation_failed');
