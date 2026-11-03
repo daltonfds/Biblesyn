@@ -11,7 +11,7 @@ export const OFFERS: Record<string, CountryOffer> = {
   US: { currency: 'USD', price: 1.00, oldPrice: 5.00, checkoutUrl: 'https://checkout.escalepay.com/4998831' },
   ZA: { currency: 'ZAR', price: 17.00, oldPrice: 80.00, checkoutUrl: 'https://checkout.escalepay.com/9787366' },
   PT: { currency: 'EUR', price: 1.00, oldPrice: 5.00, checkoutUrl: 'https://checkout.escalepay.com/3788940' },
-  IT: { currency: 'EUR', price: 1.00, oldPrice: 5.00, checkoutUrl: 'TODO' }, // TODO: create the Italy checkout link
+  IT: { currency: 'EUR', price: 1.00, oldPrice: 5.00, checkoutUrl: 'https://checkout.escalepay.com/3788940' },
 };
 
 export function resolveOfferCountry(country?: string | null): string {
@@ -35,6 +35,25 @@ export function getOfferByCheckoutId(checkoutId?: string | number | null): {coun
     } catch { /* Invalid URLs are treated as unconfigured. */ }
   }
   return null;
+}
+
+export function resolveWebhookOffer(checkoutId?: string | number | null, paymentCountry?: string | null, profileCountry?: string | null): {country: string; offer: CountryOffer} | null {
+  const matched = getOfferByCheckoutId(checkoutId);
+  if (!matched) return null;
+  const id = String(checkoutId ?? '').trim();
+  // EscalePay checkout 3788940 is shared by PT and IT. Prefer the signed
+  // country attribution, then the saved profile country, then the ID match (PT).
+  for (const candidate of [paymentCountry, profileCountry, matched.country]) {
+    const code = (candidate || '').trim().toUpperCase();
+    if (!Object.prototype.hasOwnProperty.call(OFFERS, code)) continue;
+    const candidateOffer = OFFERS[code];
+    try {
+      if (new URL(candidateOffer.checkoutUrl).pathname.split('/').filter(Boolean).pop() === id) {
+        return {country: code, offer: candidateOffer};
+      }
+    } catch { /* Invalid URLs cannot match a payment. */ }
+  }
+  return matched;
 }
 
 export function getDiscountPercent(offer: CountryOffer): number {
