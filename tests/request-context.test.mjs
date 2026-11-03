@@ -25,7 +25,7 @@ for (const [country, locale] of countries) {
 test('unmapped IP country keeps country for diagnostics but selects US offer and Accept-Language locale', () => {
   const result = resolveRequestContext({ipCountry: 'MZ', acceptLanguage: 'pt-PT,pt;q=0.9', environment: 'production'});
   assert.equal(result.country, 'MZ');
-  assert.equal(result.offerCountry, 'MZ');
+  assert.equal(result.offerCountry, 'US');
   assert.equal(result.locale, 'pt-PT');
 });
 
