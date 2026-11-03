@@ -5,13 +5,13 @@ import vm from 'node:vm';
 import ts from 'typescript';
 
 const source = fs.readFileSync(new URL('../src/lib/offer.ts', import.meta.url), 'utf8');
-const js = ts.transpile(source, {module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2020});
-const sandbox = {module: {exports: {}}, exports: {}};
-vm.runInNewContext(js, sandbox);
-const {getOffer, OFFERS} = sandbox.module.exports;
+const js = ts.transpileModule(source, {compilerOptions: {module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2020}}).outputText;
+const module = {exports: {}};
+vm.runInNewContext(js, {module, exports: module.exports});
+const {getOffer, OFFERS} = module.exports;
 
 for (const country of ['US','PT','IT','ZA','BR']) {
-  test(country + ' resolves to its own offer', () => {
+  test(country + ' resolves to its own offer and checkout URL', () => {
     assert.equal(getOffer(country), OFFERS[country]);
     assert.equal(getOffer(country).currency, OFFERS[country].currency);
     assert.equal(getOffer(country).checkoutUrl, OFFERS[country].checkoutUrl);
