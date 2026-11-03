@@ -22,7 +22,8 @@ export async function POST(request: Request) {
   // for automatic account matching; never activate Premium from a browser redirect.
   const url = new URL(offer.checkoutUrl);
   url.searchParams.set('user_id', user.id);
-  if (user.email || profile?.email) url.searchParams.set('email', user.email || profile.email);
+  const customerEmail = user.email || profile?.email;
+  if (customerEmail) url.searchParams.set('email', customerEmail);
   url.searchParams.set('locale', locale);
   url.searchParams.set('country', country);
   url.searchParams.set('external_reference', 'biblesyn_' + user.id);
