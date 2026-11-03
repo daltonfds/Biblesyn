@@ -70,6 +70,7 @@ export async function POST(request: NextRequest, context: {params: {provider: st
   const country = str(metadata.country, data.country, body.country).toUpperCase();
   const amountRaw = data.amount_cents ?? data.amount ?? body.amount_cents ?? body.amount;
   const amount = Number(amountRaw);
+  const amountCents = Number.isFinite(amount) ? (data.amount_cents !== undefined ? Math.round(amount) : Math.round(amount * 100)) : null;
   const deliveryId = str(request.headers.get('x-webhook-id'), request.headers.get('x-escalepay-delivery'), body.webhook_id, body.event_id, body.id);
   const eventHash = createHash('sha256').update(raw).digest('hex');
   const eventId = deliveryId || eventHash;
@@ -124,6 +125,11 @@ export async function POST(request: NextRequest, context: {params: {provider: st
         premium_provider: provider, premium_order_id: orderId, premium_source: provider,
       }).eq('id', profile.id);
       if (error) throw new Error('profile_activation_failed');
+      await db.from('payment_transactions').upsert({
+        provider, provider_order_id: orderId, user_id: profile.id,
+        country: country || profile.country || null, currency: currency || null,
+        amount_cents: amountCents, status: 'paid', refunded: false, paid_at: now.toISOString(), updated_at: now.toISOString(),
+      }, {onConflict: 'provider,provider_order_id'});
       await db.from('payment_webhook_events').update({processing_status: 'processed', user_id: profile.id}).eq('provider', provider).eq('provider_event_id', eventId);
       if (profile.email || email) await sendSubscriptionConfirmation(profile.email || email, profile.locale);
       return NextResponse.json({ok: true, processed: true, action, orderId});
@@ -135,6 +141,11 @@ export async function POST(request: NextRequest, context: {params: {provider: st
         premium_provider: provider, premium_order_id: orderId || null,
       }).eq('id', profile.id);
       if (error) throw new Error('profile_revocation_failed');
+      if (orderId) {
+        const isRefund = /refund|reembolso|estorno|chargeback|dispute/.test(norm(event + '_' + status));
+        await db.from('payment_transactions').update({status: isRefund ? 'refunded' : 'canceled', refunded: isRefund, updated_at: new Date().toISOString()})
+          .eq('provider', provider).eq('provider_order_id', orderId);
+      }
       await db.from('payment_webhook_events').update({processing_status: 'processed', user_id: profile.id}).eq('provider', provider).eq('provider_event_id', eventId);
       return NextResponse.json({ok: true, processed: true, action, orderId});
     }
