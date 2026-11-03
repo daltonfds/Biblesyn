@@ -109,5 +109,6 @@ test('all localized offer pages and checkout responses are dynamic and private',
     assert.match(source, /private, no-store/);
     assert.match(source, /Vary/);
     assert.match(source, /x-vercel-ip-country/);
+    assert.match(source, /Accept-Language/);
   }
 });
