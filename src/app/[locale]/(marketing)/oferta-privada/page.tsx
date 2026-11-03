@@ -3,6 +3,8 @@ import {redirect} from "next/navigation";
 import {getCountry} from "@/lib/locale";
 import { BONUSES, TEASERS, FAQ, getOffer, getDiscountPercent, formatOfferCurrency, isCheckoutConfigured } from "@/lib/offer";
 
+export const dynamic = 'force-dynamic';
+
 const Acc = ({ items }: { items: { q: string; a: string }[] }) => (
   <>{items.map((i) => (
     <details key={i.q}><summary>{i.q}</summary><div>{i.a}</div></details>
@@ -18,7 +20,7 @@ export async function generateMetadata({params}: {params: {locale: string}}) {
 }
 
 export default function Page({params}: {params: {locale: string}}) {
-  const country = (getCountry() || process.env.NEXT_COUNTRY || 'US').toUpperCase();
+  const country = (getCountry() || 'US').toUpperCase();
   if (params.locale !== "pt-BR" || country !== "BR") redirect(`/${params.locale}/premium`);
   const offer = getOffer(country);
   const oldPrice = formatOfferCurrency(params.locale, offer, offer.oldPrice);
