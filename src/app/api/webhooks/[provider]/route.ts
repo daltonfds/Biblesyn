@@ -2,6 +2,7 @@ import {createHash, createHmac, timingSafeEqual} from 'node:crypto';
 import {NextRequest, NextResponse} from 'next/server';
 import {supabaseAdmin} from '@/lib/supabase/admin';
 import {sendSubscriptionConfirmation} from '@/lib/email';
+import {getOfferByCheckoutId, isCheckoutConfigured} from '@/lib/offer';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -57,17 +58,22 @@ export async function POST(request: NextRequest, context: {params: {provider: st
   const data = obj(body.data ?? body.payment ?? body);
   const buyer = obj(data.buyer ?? data.customer ?? body.customer);
   const metadata = obj(data.metadata ?? body.metadata);
+  const checkout = obj(data.checkout ?? body.checkout);
+  const product = obj(data.product ?? body.product);
   const event = str(request.headers.get('x-escalepay-event'), body.event_type, body.event, body.type, data.event_type);
   const status = str(data.status, body.status, body.payment_status, event);
   const action = eventAction(event, status);
   const orderId = str(data.order_id, data.orderId, data.transaction_id, data.payment_id, data.id, body.order_id, body.orderId);
   const email = str(buyer.email, data.customer_email, data.email, body.customer_email, body.email).toLowerCase();
   const externalReference = str(data.external_reference, data.externalReference, body.external_reference);
+  // Resolve the paid offer from the EscalePay checkout/product ID, never from visitor IP.
+  const checkoutId = str(data.checkout_id, data.checkoutId, data.product_id, data.productId, data.offer_id, data.offerId, checkout.id, product.id, metadata.checkout_id, metadata.product_id, body.checkout_id, body.checkoutId, body.product_id, body.productId); 
+  const matchedOffer = getOfferByCheckoutId(checkoutId);
   const explicitUserId = str(metadata.user_id, data.user_id, body.user_id);
   const refUserId = externalReference.match(/^biblesyn_([0-9a-f-]{36})$/i)?.[1] || '';
   const userId = explicitUserId || refUserId;
-  const currency = str(data.currency, body.currency).toUpperCase();
-  const country = str(metadata.country, data.country, body.country).toUpperCase();
+  const currency = matchedOffer?.offer.currency || '';
+  const country = matchedOffer?.country || '';
   const amountRaw = data.amount_cents ?? data.amount ?? body.amount_cents ?? body.amount;
   const amount = Number(amountRaw);
   const amountCents = Number.isFinite(amount) ? (data.amount_cents !== undefined ? Math.round(amount) : Math.round(amount * 100)) : null;
@@ -96,6 +102,12 @@ export async function POST(request: NextRequest, context: {params: {provider: st
       .eq('provider', provider).eq('provider_event_id', eventId);
   }
 
+  if (action !== 'ignore' && (!matchedOffer || !isCheckoutConfigured(matchedOffer.offer))) {
+    await db.from('payment_webhook_events').update({processing_status: 'failed', processing_error: 'checkout_id_missing_or_unknown'})
+      .eq('provider', provider).eq('provider_event_id', eventId);
+    return NextResponse.json({ok: false, error: 'checkout_id_missing_or_unknown'}, {status: 422});
+  }
+
   if (action === 'ignore') {
     await db.from('payment_webhook_events').update({processing_status: 'ignored'}).eq('provider', provider).eq('provider_event_id', eventId);
     return NextResponse.json({ok: true, processed: false, action: 'ignore'});
@@ -121,7 +133,7 @@ export async function POST(request: NextRequest, context: {params: {provider: st
       const now = new Date();
       const {error: ledgerError} = await db.from('payment_transactions').upsert({
         provider, provider_order_id: orderId, user_id: profile.id,
-        country: country || profile.country || null, currency: currency || null,
+        country, currency,
         amount_cents: amountCents, status: 'paid', refunded: false, paid_at: now.toISOString(), updated_at: now.toISOString(),
       }, {onConflict: 'provider,provider_order_id'});
       if (ledgerError) throw new Error('payment_ledger_write_failed');
@@ -135,7 +147,7 @@ export async function POST(request: NextRequest, context: {params: {provider: st
       const expiry = new Date(base.getTime() + 30 * 24 * 60 * 60 * 1000);
       const {error} = await db.from('profiles').update({
         is_premium: true, premium_expires_at: expiry.toISOString(), premium_status: 'active',
-        premium_country: country || profile.country || null, premium_currency: currency || null,
+        country, premium_country: country, premium_currency: currency,
         premium_provider: provider, premium_order_id: orderId, premium_source: provider,
       }).eq('id', profile.id);
       if (error) throw new Error('profile_activation_failed');
@@ -152,8 +164,9 @@ export async function POST(request: NextRequest, context: {params: {provider: st
       }).eq('id', profile.id);
       if (error) throw new Error('profile_revocation_failed');
       if (orderId) {
-        const isRefund = /refund|reembolso|estorno|chargeback|dispute/.test(norm(event + '_' + status));
-        await db.from('payment_transactions').update({status: isRefund ? 'refunded' : 'canceled', refunded: isRefund, updated_at: new Date().toISOString()})
+        const isChargeback = /chargeback|dispute/.test(norm(event + '_' + status));
+        const isRefund = /refund|reembolso|estorno/.test(norm(event + '_' + status));
+        await db.from('payment_transactions').update({country, currency, status: isChargeback ? 'chargeback' : isRefund ? 'refunded' : 'canceled', refunded: isRefund || isChargeback, updated_at: new Date().toISOString()})
           .eq('provider', provider).eq('provider_order_id', orderId);
       }
       await db.from('payment_webhook_events').update({processing_status: 'processed', user_id: profile.id}).eq('provider', provider).eq('provider_event_id', eventId);
