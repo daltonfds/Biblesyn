@@ -37,6 +37,10 @@ export function getOfferByCheckoutId(checkoutId?: string | number | null): {coun
   return null;
 }
 
+export function getDiscountPercent(offer: CountryOffer): number {
+  return offer.oldPrice > offer.price ? Math.round((1 - offer.price / offer.oldPrice) * 100) : 0;
+}
+
 export function isCheckoutConfigured(offer: CountryOffer): boolean {
   if (!offer.checkoutUrl.trim() || offer.checkoutUrl.trim().toUpperCase() === 'TODO') return false;
   try { const url = new URL(offer.checkoutUrl); return url.protocol === 'https:'; }
@@ -47,7 +51,7 @@ export function isCheckoutConfigured(offer: CountryOffer): boolean {
 export const PRICE = {
   old: new Intl.NumberFormat('pt-BR', {style: 'currency', currency: OFFERS.BR.currency}).format(OFFERS.BR.oldPrice),
   now: new Intl.NumberFormat('pt-BR', {style: 'currency', currency: OFFERS.BR.currency}).format(OFFERS.BR.price),
-  discount: Math.round((1 - OFFERS.BR.price / OFFERS.BR.oldPrice) * 100),
+  discount: getDiscountPercent(OFFERS.BR),
   total: 'R$ 97,00',
 };
 export const BONUSES = [
