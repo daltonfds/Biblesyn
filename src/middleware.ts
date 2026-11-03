@@ -5,6 +5,13 @@ import {routing} from './i18n/routing';
 import {resolveRequestContext} from './lib/request-context';
 
 const handleI18nRouting = createMiddleware(routing);
+
+function privateCache(response: NextResponse) {
+  response.headers.set('Cache-Control', 'private, no-store, max-age=0, must-revalidate');
+  response.headers.set('Vary', 'Cookie, Accept-Language, x-vercel-ip-country');
+  return response;
+}
+
 const SUPPORTED = new Set<string>(routing.locales);
 
 export async function middleware(req: NextRequest) {
@@ -26,7 +33,7 @@ export async function middleware(req: NextRequest) {
       response.cookies.delete('NEXT_COUNTRY');
       response.cookies.delete('country');
     }
-    return response;
+    return privateCache(response);
   }
   if (pathname.startsWith('/_next/')) return NextResponse.next();
 
@@ -64,7 +71,7 @@ export async function middleware(req: NextRequest) {
       redirect.cookies.delete('country');
     }
     redirect.cookies.set('NEXT_LOCALE', locale, options);
-    return redirect;
+    return privateCache(redirect);
   }
 
   req.headers.set('x-biblesyn-path', pathname);
@@ -105,11 +112,11 @@ export async function middleware(req: NextRequest) {
     const target = req.nextUrl.clone();
     target.pathname = '/' + locale + '/login';
     target.searchParams.set('next', pathname + req.nextUrl.search);
-    return NextResponse.redirect(target);
+    return privateCache(NextResponse.redirect(target));
   }
 
   authResponse.cookies.getAll().forEach(cookie => intlResponse.cookies.set(cookie));
-  return intlResponse;
+  return privateCache(intlResponse);
 }
 
 export const config = {
