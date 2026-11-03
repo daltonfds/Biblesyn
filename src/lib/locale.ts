@@ -51,16 +51,22 @@ export const getLocale = cache(async (): Promise<string> => {
   const manual = supportedLocale(cookies().get('NEXT_LOCALE')?.value || cookies().get('locale')?.value);
   if (manual) return manual;
 
-  const country = (headers().get('x-vercel-ip-country') || cookies().get('country')?.value || '').toUpperCase();
+  const country = (getCountryCookie() || process.env.NEXT_COUNTRY || headers().get('x-vercel-ip-country') || '').toUpperCase();
   const countryLocale = supportedLocale(COUNTRY_LOCALE[country]);
   if (countryLocale) return countryLocale;
 
   const browser = headers().get('accept-language')?.split(',')[0]?.split(';')[0];
   return supportedLocale(browser) || 'en';
 });
-export function getCountry(): string {
-  return (cookies().get('country')?.value || headers().get('x-vercel-ip-country') || '').toUpperCase();
+
+export function getCountryCookie(): string {
+  return (cookies().get('NEXT_COUNTRY')?.value || cookies().get('country')?.value || '').trim().toUpperCase();
 }
+
+export function getCountry(): string {
+  return getCountryCookie() || (process.env.NEXT_COUNTRY || headers().get('x-vercel-ip-country') || '').trim().toUpperCase();
+}
+
 export function getReaderPrefs(): {f: string; s: number} {
   try { const j = JSON.parse(cookies().get('reader')?.value ?? '{}'); return {f: (FONTS as readonly string[]).includes(j.f) ? j.f : 'serif', s: Math.min(28, Math.max(15, Number(j.s) || 19))}; }
   catch { return {f: 'serif', s: 19}; }
