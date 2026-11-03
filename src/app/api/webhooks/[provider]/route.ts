@@ -2,7 +2,7 @@ import {createHash, createHmac, timingSafeEqual} from 'node:crypto';
 import {NextRequest, NextResponse} from 'next/server';
 import {supabaseAdmin} from '@/lib/supabase/admin';
 import {sendSubscriptionConfirmation} from '@/lib/email';
-import {getOfferByCheckoutId, isCheckoutConfigured} from '@/lib/offer';
+import {getOfferByCheckoutId, isCheckoutConfigured, resolveWebhookOffer} from '@/lib/offer';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -73,8 +73,6 @@ export async function POST(request: NextRequest, context: {params: {provider: st
   const explicitUserId = str(metadata.user_id, data.user_id, body.user_id);
   const refUserId = externalReference.match(/^biblesyn_([0-9a-f-]{36})$/i)?.[1] || '';
   const userId = explicitUserId || refUserId;
-  const currency = matchedOffer?.offer.currency || '';
-  const country = matchedOffer?.country || '';
   const amountRaw = data.amount_cents ?? data.amount ?? body.amount_cents ?? body.amount;
   const amount = Number(amountRaw);
   const amountCents = Number.isFinite(amount) ? (data.amount_cents !== undefined ? Math.round(amount) : Math.round(amount * 100)) : null;
@@ -121,6 +119,10 @@ export async function POST(request: NextRequest, context: {params: {provider: st
     else throw new Error('buyer_reference_missing');
     const {data: profile, error: profileError} = await profileQuery.maybeSingle();
     if (profileError || !profile) throw new Error('buyer_not_found');
+    const resolvedOffer = resolveWebhookOffer(checkoutId, str(data.country, metadata.country, checkout.country, offerData.country, body.country), profile.country);
+    if (!resolvedOffer || !isCheckoutConfigured(resolvedOffer.offer)) throw new Error('checkout_id_missing_or_unknown');
+    const {country, offer} = resolvedOffer;
+    const currency = offer.currency;
 
     if (action === 'activate') {
       if (!orderId) throw new Error('order_id_missing');
