@@ -14,11 +14,11 @@ export async function POST(req: Request) {
   const cur = (() => { try { return JSON.parse(readCookie('reader') || '{}'); } catch { return {}; } })();
 
   if (body.sync && user) {
-    const {data: p} = await sb.from('profiles').select('locale,country,font_family,font_size').eq('id', user.id).maybeSingle();
+    const {data: p} = await sb.from('profiles').select('locale,font_family,font_size').eq('id', user.id).maybeSingle();
     const selectedLocale = typeof body.locale === 'string' && routing.locales.includes(body.locale as any)
       ? body.locale
       : readCookie('NEXT_LOCALE') || readCookie('locale') || p?.locale || 'en';
-    const selectedCountry = (readCookie('NEXT_COUNTRY') || readCookie('country') || p?.country || '').toUpperCase();
+    const selectedCountry = (req.headers.get('x-vercel-ip-country') || (process.env.VERCEL_ENV !== 'production' ? readCookie('NEXT_COUNTRY') || readCookie('country') : '') || '').toUpperCase();
     if (routing.locales.includes(selectedLocale as any)) {
       res.cookies.set('locale', selectedLocale, opt);
       res.cookies.set('NEXT_LOCALE', selectedLocale, opt);
@@ -28,9 +28,7 @@ export async function POST(req: Request) {
       res.cookies.set('NEXT_COUNTRY', selectedCountry, opt);
     }
     if (p) res.cookies.set('reader', JSON.stringify({f: p.font_family, s: p.font_size}), opt);
-    if (user && (selectedLocale !== p?.locale || (selectedCountry && selectedCountry !== p?.country))) {
-      await sb.from('profiles').update({locale: selectedLocale, ...(selectedCountry ? {country: selectedCountry} : {})}).eq('id', user.id);
-    }
+    if (user && selectedLocale !== p?.locale) await sb.from('profiles').update({locale: selectedLocale}).eq('id', user.id);
     return res;
   }
 
@@ -39,15 +37,6 @@ export async function POST(req: Request) {
     res.cookies.set('locale', body.locale, opt);
     res.cookies.set('NEXT_LOCALE', body.locale, opt);
     upd.locale = body.locale;
-  }
-  if (typeof body.country === 'string') {
-    const code = body.country.trim().toUpperCase();
-    const {data} = await sb.from('countries').select('code').eq('code', code).eq('active', true).maybeSingle();
-    if (data) {
-      res.cookies.set('country', data.code, opt);
-      res.cookies.set('NEXT_COUNTRY', data.code, opt);
-      upd.country = data.code;
-    }
   }
   if (body.font || body.size) {
     const f = (FONTS as readonly string[]).includes(body.font) ? body.font : cur.f ?? 'serif';
