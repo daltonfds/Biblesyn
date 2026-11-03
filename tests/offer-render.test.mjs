@@ -74,8 +74,9 @@ test('locale and country cookies survive middleware, auth, preference sync and c
   assert.match(callback, /countryCookie = cookieStore\.get\('NEXT_COUNTRY'\)/);
   assert.match(auth, /post\(\{sync: true, locale\}\)/);
   assert.match(prefs, /x-vercel-ip-country/);
-  assert.match(checkout, /getCountryCookie\(\) \|\| profile\?\.country/);
+  assert.match(checkout, /getCountryCookie\(\) \|\| getCountry\(\) \|\| 'US'/);
   assert.match(checkout, /buildOfferCheckoutUrl\(locale, country, user\.id, customerEmail\)/);
+  assert.doesNotMatch(checkout, /profile\?\.country/);
 });
 
 test('sale prices and EscalePay URLs have one source of truth', () => {
