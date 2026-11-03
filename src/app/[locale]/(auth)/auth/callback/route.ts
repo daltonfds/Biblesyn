@@ -41,8 +41,8 @@ export async function GET(req: Request, {params}: {params: {locale: string}}) {
   const countryCookie = cookieStore.get('NEXT_COUNTRY')?.value || cookieStore.get('country')?.value;
   const localeCookie = cookieStore.get('NEXT_LOCALE')?.value || locale;
   const updates: Record<string, string> = {};
-  if (!profile?.country && countryCookie) updates.country = countryCookie.toUpperCase();
-  if (!profile?.locale && localeCookie) updates.locale = localeCookie;
+  if (countryCookie && profile?.country !== countryCookie.toUpperCase()) updates.country = countryCookie.toUpperCase();
+  if (localeCookie && profile?.locale !== localeCookie) updates.locale = localeCookie;
   if (Object.keys(updates).length) await supabase.from('profiles').update(updates).eq('id', user.id);
 
   const finalLocale = localeCookie || profile?.locale || locale;
