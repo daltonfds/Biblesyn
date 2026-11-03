@@ -1,18 +1,18 @@
 import {NextResponse} from 'next/server';
 import {supabaseServer} from '@/lib/supabase/server';
-import {getCountry} from '@/lib/locale';
+import {getCountry, getCountryCookie, getLocale} from '@/lib/locale';
 import {routing} from '@/i18n/routing';
 import {getOffer, isCheckoutConfigured, resolveOfferCountry} from '@/lib/offer';
 
 export async function POST(request: Request) {
   const body = await request.json().catch(() => ({}));
-  const locale = typeof body.locale === 'string' && routing.locales.includes(body.locale as any) ? body.locale : 'en';
+  const locale = typeof body.locale === 'string' && routing.locales.includes(body.locale as any) ? body.locale : await getLocale();
   const supabase = supabaseServer();
   const {data: {user}} = await supabase.auth.getUser();
   if (!user) return NextResponse.json({error: 'authentication_required'}, {status: 401});
 
   const {data: profile} = await supabase.from('profiles').select('country,email').eq('id', user.id).maybeSingle();
-  const country = resolveOfferCountry(getCountry() || process.env.NEXT_COUNTRY || profile?.country || 'US');
+  const country = resolveOfferCountry(getCountryCookie() || profile?.country || getCountry() || process.env.NEXT_COUNTRY || 'US');
   const offer = getOffer(country);
   if (!isCheckoutConfigured(offer)) {
     return NextResponse.json({error: 'checkout_not_configured', country}, {status: 503});
