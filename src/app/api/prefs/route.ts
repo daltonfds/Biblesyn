@@ -9,16 +9,28 @@ export async function POST(req: Request) {
   const {data: {user}} = await sb.auth.getUser();
   const res = NextResponse.json({ok: true});
   const opt = {path: '/', maxAge: 31536000, sameSite: 'lax' as const};
-  const cur = (() => { try { return JSON.parse(decodeURIComponent(req.headers.get('cookie')?.match(/(?:^|; )reader=([^;]*)/)?.[1] ?? '{}')); } catch { return {}; } })();
+  const cookieHeader = req.headers.get('cookie') || '';
+  const readCookie = (name: string) => decodeURIComponent(cookieHeader.match(new RegExp('(?:^|; )' + name + '=([^;]*)'))?.[1] ?? '');
+  const cur = (() => { try { return JSON.parse(readCookie('reader') || '{}'); } catch { return {}; } })();
 
   if (body.sync && user) {
     const {data: p} = await sb.from('profiles').select('locale,country,font_family,font_size').eq('id', user.id).maybeSingle();
-    if (p?.locale && routing.locales.includes(p.locale as (typeof routing.locales)[number])) {
-      res.cookies.set('locale', p.locale, opt);
-      res.cookies.set('NEXT_LOCALE', p.locale, opt);
+    const selectedLocale = typeof body.locale === 'string' && routing.locales.includes(body.locale as any)
+      ? body.locale
+      : readCookie('NEXT_LOCALE') || readCookie('locale') || p?.locale || 'en';
+    const selectedCountry = (readCookie('NEXT_COUNTRY') || readCookie('country') || p?.country || '').toUpperCase();
+    if (routing.locales.includes(selectedLocale as any)) {
+      res.cookies.set('locale', selectedLocale, opt);
+      res.cookies.set('NEXT_LOCALE', selectedLocale, opt);
     }
-    if (p?.country) res.cookies.set('country', p.country, opt);
+    if (/^[A-Z]{2}$/.test(selectedCountry)) {
+      res.cookies.set('country', selectedCountry, opt);
+      res.cookies.set('NEXT_COUNTRY', selectedCountry, opt);
+    }
     if (p) res.cookies.set('reader', JSON.stringify({f: p.font_family, s: p.font_size}), opt);
+    if (user && (selectedLocale !== p?.locale || (selectedCountry && selectedCountry !== p?.country))) {
+      await sb.from('profiles').update({locale: selectedLocale, ...(selectedCountry ? {country: selectedCountry} : {})}).eq('id', user.id);
+    }
     return res;
   }
 
@@ -29,8 +41,13 @@ export async function POST(req: Request) {
     upd.locale = body.locale;
   }
   if (typeof body.country === 'string') {
-    const {data} = await sb.from('countries').select('code').eq('code', body.country.toUpperCase()).eq('active', true).maybeSingle();
-    if (data) { res.cookies.set('country', data.code, opt); upd.country = data.code; }
+    const code = body.country.trim().toUpperCase();
+    const {data} = await sb.from('countries').select('code').eq('code', code).eq('active', true).maybeSingle();
+    if (data) {
+      res.cookies.set('country', data.code, opt);
+      res.cookies.set('NEXT_COUNTRY', data.code, opt);
+      upd.country = data.code;
+    }
   }
   if (body.font || body.size) {
     const f = (FONTS as readonly string[]).includes(body.font) ? body.font : cur.f ?? 'serif';
