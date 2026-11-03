@@ -84,8 +84,8 @@ test('sale prices and EscalePay URLs have one source of truth', () => {
     return entry.isDirectory() ? walk(full) : [full];
   });
   const files = [...walk(new URL('../src', import.meta.url).pathname), ...walk(new URL('../messages', import.meta.url).pathname)];
-  const currencyLiteral = /R\\$\\s*\\d|US\\$\\s*\\d|€\\s*\\d|\\d[,.]\\d{2}\\s*€|R\\s*\\d+[,.]\\d{2}/;
-  const checkoutLiteral = /https:\\/\\/checkout\\.escalepay\\.com\\//;
+  const currencyLiteral = /R\$\s*\d|US\$\s*\d|€\s*\d|\d[,.]\d{2}\s*€|R\s*\d+[,.]\d{2}/;
+  const checkoutLiteral = /https:\/\/checkout\.escalepay\.com\//;
   const violations = [];
   for (const file of files) {
     if (file.endsWith(path.join('lib', 'offer.ts'))) continue;
