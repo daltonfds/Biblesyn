@@ -12,7 +12,7 @@ export async function POST(request: Request) {
   if (!user) return NextResponse.json({error: 'authentication_required'}, {status: 401});
 
   const {data: profile} = await supabase.from('profiles').select('country,email').eq('id', user.id).maybeSingle();
-  const country = (getCountry() || profile?.country || 'US').toUpperCase();
+  const country = (getCountry() || process.env.NEXT_COUNTRY || profile?.country || 'US').toUpperCase();
   const offer = getOffer(country);
   if (!isCheckoutConfigured(offer)) {
     return NextResponse.json({error: 'checkout_not_configured', country: OFFERS_COUNTRY(country)}, {status: 503});
