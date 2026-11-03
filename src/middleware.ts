@@ -74,10 +74,15 @@ export async function middleware(req: NextRequest) {
     return privateCache(redirect);
   }
 
-  req.headers.set('x-biblesyn-path', pathname);
   req.cookies.set('NEXT_LOCALE', locale);
 
-  const intlResponse = handleI18nRouting(req);
+  let intlResponse: NextResponse;
+  try {
+    intlResponse = handleI18nRouting(req);
+  } catch (error) {
+    console.error('[middleware] next-intl routing failed; serving request without redirect', error);
+    return privateCache(NextResponse.next({request: req}));
+  }
   const cookieOptions = {path: '/', maxAge: 31536000, sameSite: 'lax' as const};
   intlResponse.cookies.set('NEXT_LOCALE', locale, cookieOptions);
   if (context.country) {
