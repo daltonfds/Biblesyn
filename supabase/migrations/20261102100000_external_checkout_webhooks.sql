@@ -41,7 +41,7 @@ create table if not exists public.payment_transactions (
   id uuid primary key default gen_random_uuid(),
   provider text not null,
   provider_order_id text not null,
-  user_id uuid references auth.users(id) on delete set null,
+  user_id uuid references public.profiles(id) on delete set null,
   country text,
   currency text,
   amount_cents bigint,
