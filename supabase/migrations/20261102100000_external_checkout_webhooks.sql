@@ -9,6 +9,12 @@ alter table public.profiles add column if not exists premium_currency text;
 alter table public.profiles add column if not exists premium_provider text;
 alter table public.profiles add column if not exists premium_order_id text;
 alter table public.profiles add column if not exists premium_status text;
+drop table if exists public.prices cascade;
+create or replace function public.is_premium() returns boolean language sql stable security definer set search_path = public as $
+  select coalesce((select is_premium and not suspended and (premium_expires_at is null or premium_expires_at > now()) from public.profiles where id = auth.uid()), false) $;
+revoke execute on function public.is_premium() from public, anon;
+grant execute on function public.is_premium() to authenticated;
+
 alter table public.profiles add constraint profiles_premium_source_check
   check (premium_source is null or premium_source in ('escalepay','manual','admin'));
 
