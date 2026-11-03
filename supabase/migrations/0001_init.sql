@@ -2,7 +2,7 @@
 create table public.profiles (
   id uuid primary key references auth.users on delete cascade,
   display_name text, country text, locale text not null default 'en',
-  is_premium boolean not null default false, stripe_customer_id text,
+  is_premium boolean not null default false,
   created_at timestamptz not null default now());
 create table public.articles (
   id uuid primary key default gen_random_uuid(), slug text not null, locale text not null default 'en',
@@ -57,7 +57,7 @@ create index on public.journal_entries (user_id, created_at desc);
 create index on public.study_plan_days (plan_id);
 create index on public.saved_articles (article_id);
 
--- Seed. Amounts are in minor units; adjust to your pricing. Stripe supports the listed currencies.
+-- Seed. Amounts are in minor units. Checkout prices are managed in src/lib/offer.ts.
 insert into public.prices (country, currency, amount_cents) values
  ('*','USD',100),('US','USD',100),('PT','EUR',100),('ES','EUR',100),('FR','EUR',100),('BR','BRL',500),('GB','GBP',100),('ZA','ZAR',2000);
 insert into public.study_plans (slug, title, description, days, sort) values
