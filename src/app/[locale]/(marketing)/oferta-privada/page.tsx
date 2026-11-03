@@ -46,7 +46,7 @@ export default function Page({params}: {params: {locale: string}}) {
         <div className="core">
           <h3>🎁 Sistema Biblesyn completo</h3>
           <p>Assistente de Bíblia com IA, planos de estudo personalizados, devocional diário, painel de crescimento e áudio (ler, ouvir ou os dois).</p>
-          <p style={{ marginTop: 12 }}><s className="no">DE {PRICE.old}</s> <b className="h">POR {PRICE.now}</b></p>
+          <p style={{ marginTop: 12 }}><s className="no">DE {PRICE.old}</s> <b className="h">POR {PRICE.now}</b> <span className="text-xs">({PRICE.discount}% de desconto)</span></p>
         </div>
         {BONUSES.map((b) => (
           <div className="it" key={b.t}>
@@ -59,7 +59,7 @@ export default function Page({params}: {params: {locale: string}}) {
 
       <section className="band"><div className="w">
         <h2>Hoje, Para o Brasil, <span className="b">Tudo Isso</span> Por Apenas</h2>
-        <div className="price"><s>{PRICE.old}</s><b>{PRICE.now}</b></div>
+        <div className="price"><s>{PRICE.old}</s><b>{PRICE.now}</b><span>{PRICE.discount}% de desconto</span></div>
         <ul className="ticks"><li>Sistema Biblesyn completo</li><li>8 materiais espirituais incluídos</li><li>Acesso imediato</li></ul>
         <CheckoutButton disabled={checkoutDisabled}>QUERO COMEÇAR MINHA JORNADA</CheckoutButton>
         <div className="note">Promoção de lançamento · por tempo limitado</div>
@@ -77,7 +77,7 @@ export default function Page({params}: {params: {locale: string}}) {
       <footer>© Biblesyn · Entenda a Palavra. Fortaleça o seu espírito.</footer>
 
       <div className="sticky">
-        <span><s>{PRICE.old}</s> <b>{PRICE.now}</b><br />Acesso imediato</span>
+        <span><s>{PRICE.old}</s> <b>{PRICE.now}</b><br />{PRICE.discount}% de desconto · Acesso imediato</span>
         <CheckoutButton disabled={checkoutDisabled}>QUERO AGORA</CheckoutButton>
       </div>
     </main>
