@@ -60,14 +60,15 @@ export async function POST(request: NextRequest, context: {params: {provider: st
   const metadata = obj(data.metadata ?? body.metadata);
   const checkout = obj(data.checkout ?? body.checkout);
   const product = obj(data.product ?? body.product);
+  const offerData = obj(data.offer ?? body.offer);
   const event = str(request.headers.get('x-escalepay-event'), body.event_type, body.event, body.type, data.event_type);
   const status = str(data.status, body.status, body.payment_status, event);
   const action = eventAction(event, status);
   const orderId = str(data.transaction_id, data.payment_id, data.order_id, data.orderId, data.id, body.transaction_id, body.payment_id, body.order_id, body.orderId);
   const email = str(buyer.email, data.customer_email, data.email, body.customer_email, body.email).toLowerCase();
-  const externalReference = str(data.external_reference, data.externalReference, body.external_reference);
+  const externalReference = str(data.external_reference, data.externalReference, metadata.external_reference, body.external_reference);
   // Resolve the paid offer from the EscalePay checkout/product ID, never from visitor IP.
-  const checkoutId = str(data.checkout_id, data.checkoutId, data.product_id, data.productId, data.offer_id, data.offerId, checkout.id, product.id, metadata.checkout_id, metadata.product_id, body.checkout_id, body.checkoutId, body.product_id, body.productId); 
+  const checkoutId = str(data.checkout_id, data.checkoutId, data.product_id, data.productId, data.offer_id, data.offerId, checkout.id, checkout.product_id, product.id, product.checkout_id, offerData.id, metadata.checkout_id, metadata.product_id, metadata.offer_id, body.checkout_id, body.checkoutId, body.product_id, body.productId); 
   const matchedOffer = getOfferByCheckoutId(checkoutId);
   const explicitUserId = str(metadata.user_id, data.user_id, body.user_id);
   const refUserId = externalReference.match(/^biblesyn_([0-9a-f-]{36})$/i)?.[1] || '';
