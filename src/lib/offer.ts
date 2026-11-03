@@ -29,6 +29,19 @@ export function formatOfferCurrency(locale: string, offer: CountryOffer, amount:
   return locale === 'en' && offer.currency === 'USD' ? formatted.replace(/^\$/, 'US$') : formatted;
 }
 
+export function buildOfferCheckoutUrl(locale: string, country?: string | null, userId?: string, email?: string): string {
+  const resolvedCountry = resolveOfferCountry(country);
+  const url = new URL(OFFERS[resolvedCountry].checkoutUrl);
+  url.searchParams.set('locale', locale);
+  url.searchParams.set('country', resolvedCountry);
+  if (userId) {
+    url.searchParams.set('user_id', userId);
+    url.searchParams.set('external_reference', 'biblesyn_' + userId);
+  }
+  if (email) url.searchParams.set('email', email);
+  return url.toString();
+}
+
 export function getOfferPresentation(locale: string, country?: string | null) {
   const resolvedCountry = resolveOfferCountry(country);
   const offer = OFFERS[resolvedCountry];
