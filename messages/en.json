@@ -139,7 +139,8 @@
     "subscribe": "Subscribe · {price}/month",
     "create_to_subscribe": "Create account to subscribe",
     "not_now": "Not now",
-    "secure": "Secure payment with Stripe. Renews monthly until cancelled."
+    "secure": "Checkout is handled securely by our payment provider. Billing is managed externally.",
+    "discount": "Save {percent}%"
   },
   "share": {
     "title": "Share",
