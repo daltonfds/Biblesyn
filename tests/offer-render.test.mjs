@@ -94,3 +94,19 @@ test('sale prices and EscalePay URLs have one source of truth', () => {
   }
   assert.deepEqual(violations, []);
 });
+
+
+test('all localized offer pages and checkout responses are dynamic and private', () => {
+  const layout = fs.readFileSync(new URL('../src/app/[locale]/layout.tsx', import.meta.url), 'utf8');
+  const premium = fs.readFileSync(new URL('../src/app/[locale]/(app)/premium/page.tsx', import.meta.url), 'utf8');
+  const privateOffer = fs.readFileSync(new URL('../src/app/[locale]/(marketing)/oferta-privada/page.tsx', import.meta.url), 'utf8');
+  const middleware = fs.readFileSync(new URL('../src/middleware.ts', import.meta.url), 'utf8');
+  const checkout = fs.readFileSync(new URL('../src/app/api/checkout/route.ts', import.meta.url), 'utf8');
+  for (const source of [layout, premium, privateOffer, checkout]) assert.match(source, /dynamic = ['"]force-dynamic['"]/);
+  for (const source of [middleware, checkout]) {
+    assert.match(source, /Cache-Control/);
+    assert.match(source, /private, no-store/);
+    assert.match(source, /Vary/);
+    assert.match(source, /x-vercel-ip-country/);
+  }
+});
