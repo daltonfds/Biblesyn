@@ -8,7 +8,9 @@ import {supabaseServer} from '@/lib/supabase/server';
 
 export async function generateMetadata({params}: {params: {locale: string}}) {
   const strings = await getStrings(params.locale);
-  return {title: strings['seo.premium'], description: strings['seo.description']};
+  const title = strings['seo.premium'];
+  const description = strings['seo.description'];
+  return {title, description, openGraph: {title, description, type: 'website', siteName: 'Biblesyn'}};
 }
 const FEATURES = [[Library, 'premium.f1'], [Sparkles, 'premium.f2'], [CalendarCheck, 'premium.f3'], [Headphones, 'premium.f4'], [NotebookPen, 'premium.f5']] as const;
 
