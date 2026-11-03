@@ -9,7 +9,7 @@
   "start": "next start",
   "typecheck": "tsc --noEmit",
   "validate:messages": "node scripts/validate-messages.mjs",
-  "test:offers": "node --test tests/offers.test.mjs tests/offer-render.test.mjs"
+  "test:offers": "node --test tests/offers.test.mjs tests/offer-render.test.mjs tests/request-context.test.mjs"
  },
  "dependencies": {
   "@supabase/ssr": "^0.5.2",
