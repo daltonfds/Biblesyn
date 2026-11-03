@@ -112,7 +112,7 @@ export async function POST(request: NextRequest, context: {params: {provider: st
       if (!orderId) throw new Error('order_id_missing');
       const {data: priorPayment} = await db.from('payment_transactions').select('refunded,status')
         .eq('provider', provider).eq('provider_order_id', orderId).maybeSingle();
-      if (priorPayment?.refunded || priorPayment?.status === 'refunded') {
+      if (priorPayment?.refunded || ['refunded','canceled','chargeback'].includes(priorPayment?.status ?? '')) {
         await db.from('payment_webhook_events').update({processing_status: 'ignored', user_id: profile.id})
           .eq('provider', provider).eq('provider_event_id', eventId);
         return NextResponse.json({ok: true, processed: false, reason: 'order_already_refunded'});
