@@ -8,7 +8,7 @@ const source = fs.readFileSync(new URL('../src/lib/offer.ts', import.meta.url), 
 const js = ts.transpileModule(source, {compilerOptions: {module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2020}}).outputText;
 const module = {exports: {}};
 vm.runInNewContext(js, {module, exports: module.exports, URL});
-const {getOffer, getOfferByCheckoutId, isCheckoutConfigured, resolveOfferCountry, OFFERS} = module.exports;
+const {getOffer, getOfferByCheckoutId, getDiscountPercent, isCheckoutConfigured, resolveOfferCountry, OFFERS} = module.exports;
 
 const expected = {
   BR: {currency: 'BRL', price: 5.90, oldPrice: 17.00, id: '9630961'},
@@ -23,6 +23,7 @@ for (const [country, value] of Object.entries(expected)) {
     assert.equal(offer.currency, value.currency);
     assert.equal(offer.price, value.price);
     assert.equal(offer.oldPrice, value.oldPrice);
+    assert.equal(getDiscountPercent(offer), Math.round((1 - value.price / value.oldPrice) * 100));
     assert.equal(offer.checkoutUrl, value.id ? 'https://checkout.escalepay.com/' + value.id : 'TODO');
     assert.equal(isCheckoutConfigured(offer), Boolean(value.id));
   });
