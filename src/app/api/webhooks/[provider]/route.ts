@@ -73,7 +73,7 @@ export async function POST(request: NextRequest, context: {params: {provider: st
   const amountCents = Number.isFinite(amount) ? (data.amount_cents !== undefined ? Math.round(amount) : Math.round(amount * 100)) : null;
   const deliveryId = str(request.headers.get('x-webhook-id'), request.headers.get('x-escalepay-delivery'), body.webhook_id, body.event_id, body.id);
   const eventHash = createHash('sha256').update(raw).digest('hex');
-  const eventId = deliveryId || eventHash;
+  let eventId = deliveryId || eventHash;
   const db = supabaseAdmin();
 
   const {error: logError} = await db.from('payment_webhook_events').insert({
@@ -85,9 +85,10 @@ export async function POST(request: NextRequest, context: {params: {provider: st
       console.error('Payment webhook log insert failed:', logError.code);
       return NextResponse.json({error: 'event_log_failed'}, {status: 500});
     }
-    let existing = await db.from('payment_webhook_events').select('processing_status').eq('provider', provider).eq('provider_event_id', eventId).maybeSingle();
-    if (!existing.data) existing = await db.from('payment_webhook_events').select('processing_status').eq('provider', provider).eq('event_hash', eventHash).maybeSingle();
+    let existing = await db.from('payment_webhook_events').select('provider_event_id,processing_status').eq('provider', provider).eq('provider_event_id', eventId).maybeSingle();
+    if (!existing.data) existing = await db.from('payment_webhook_events').select('provider_event_id,processing_status').eq('provider', provider).eq('event_hash', eventHash).maybeSingle();
     if (!existing.data) return NextResponse.json({error: 'duplicate_event_lookup_failed'}, {status: 500});
+    eventId = existing.data.provider_event_id;
     if (existing.data.processing_status === 'processed' || existing.data.processing_status === 'ignored') {
       return NextResponse.json({ok: true, duplicate: true});
     }
@@ -138,7 +139,8 @@ export async function POST(request: NextRequest, context: {params: {provider: st
         premium_provider: provider, premium_order_id: orderId, premium_source: provider,
       }).eq('id', profile.id);
       if (error) throw new Error('profile_activation_failed');
-      await db.from('payment_webhook_events').update({processing_status: 'processed', user_id: profile.id}).eq('provider', provider).eq('provider_event_id', eventId);
+      const {error: eventUpdateError} = await db.from('payment_webhook_events').update({processing_status: 'processed', user_id: profile.id}).eq('provider', provider).eq('provider_event_id', eventId);
+      if (eventUpdateError) throw new Error('event_log_update_failed');
       if (profile.email || email) await sendSubscriptionConfirmation(profile.email || email, profile.locale);
       return NextResponse.json({ok: true, processed: true, action, orderId});
     }
