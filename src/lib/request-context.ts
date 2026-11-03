@@ -21,7 +21,7 @@ export function acceptLanguageLocale(header: string | null | undefined): string 
     if (exact) return exact;
     const language = candidate.tag.split('-')[0];
     if (language === 'en') return 'en';
-    const regional = routing.locales.find(locale => locale.toLowerCase().startsWith(language + '-'));
+    const regional = SUPPORTED_LOCALES.find(locale => locale.toLowerCase().startsWith(language + '-'));
     if (regional) return regional;
     if ((routing.locales as readonly string[]).includes(language)) return language;
   }
