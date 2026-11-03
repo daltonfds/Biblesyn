@@ -22,11 +22,30 @@ export async function middleware(req: NextRequest) {
     environment: process.env.VERCEL_ENV,
   });
   const locale = context.locale;
+  // Mutate the request cookie jar too, so Server Components in this same
+  // request see the IP country rather than the browser's previous country.
+  if (context.country) {
+    req.cookies.set('NEXT_COUNTRY', context.country);
+    req.cookies.set('country', context.country);
+  } else {
+    req.cookies.delete('NEXT_COUNTRY');
+    req.cookies.delete('country');
+  }
   const firstSegment = pathname.split('/')[1];
   if (SUPPORTED.has(firstSegment) && firstSegment !== locale) {
     const target = req.nextUrl.clone();
     target.pathname = pathname.replace(new RegExp('^/' + firstSegment + '(?=/|$)'), '/' + locale);
-    return NextResponse.redirect(target);
+    const redirect = NextResponse.redirect(target);
+    const options = {path: '/', maxAge: 31536000, sameSite: 'lax' as const};
+    if (context.country) {
+      redirect.cookies.set('NEXT_COUNTRY', context.country, options);
+      redirect.cookies.set('country', context.country, options);
+    } else {
+      redirect.cookies.delete('NEXT_COUNTRY');
+      redirect.cookies.delete('country');
+    }
+    redirect.cookies.set('NEXT_LOCALE', locale, options);
+    return redirect;
   }
 
   req.headers.set('x-biblesyn-path', pathname);
