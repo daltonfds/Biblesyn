@@ -1,7 +1,9 @@
 import CheckoutButton from "@/components/CheckoutButton";
 import {redirect} from "next/navigation";
 import {getCountry} from "@/lib/locale";
-import { PRICE, BONUSES, TEASERS, FAQ } from "@/lib/offer";
+import { PRICE, BONUSES, TEASERS, FAQ, getOffer, isCheckoutConfigured } from "@/lib/offer";
+
+const checkoutDisabled = !isCheckoutConfigured(getOffer('BR')) || getOffer('BR').price <= 0;
 
 const Acc = ({ items }: { items: { q: string; a: string }[] }) => (
   <>{items.map((i) => (
@@ -59,7 +61,7 @@ export default function Page({params}: {params: {locale: string}}) {
         <h2>Hoje, Para o Brasil, <span className="b">Tudo Isso</span> Por Apenas</h2>
         <div className="price"><s>{PRICE.old}</s><b>{PRICE.now}</b></div>
         <ul className="ticks"><li>Sistema Biblesyn completo</li><li>8 materiais espirituais incluídos</li><li>Acesso imediato</li></ul>
-        <CheckoutButton>QUERO COMEÇAR MINHA JORNADA</CheckoutButton>
+        <CheckoutButton disabled={checkoutDisabled}>QUERO COMEÇAR MINHA JORNADA</CheckoutButton>
         <div className="note">Promoção de lançamento · por tempo limitado</div>
       </div></section>
 
@@ -69,14 +71,14 @@ export default function Page({params}: {params: {locale: string}}) {
         <Acc items={TEASERS} />
         <h2 style={{ marginTop: 44 }}>Perguntas frequentes</h2>
         <Acc items={FAQ} />
-        <CheckoutButton className="btn dark">QUERO ACESSO POR {PRICE.now.toUpperCase()}</CheckoutButton>
+        <CheckoutButton disabled={checkoutDisabled} className="btn dark">QUERO ACESSO POR {PRICE.now.toUpperCase()}</CheckoutButton>
       </div></section>
 
       <footer>© Biblesyn · Entenda a Palavra. Fortaleça o seu espírito.</footer>
 
       <div className="sticky">
         <span><s>{PRICE.old}</s> <b>{PRICE.now}</b><br />Acesso imediato</span>
-        <CheckoutButton>QUERO AGORA</CheckoutButton>
+        <CheckoutButton disabled={checkoutDisabled}>QUERO AGORA</CheckoutButton>
       </div>
     </main>
   );
