@@ -5,18 +5,36 @@ export type CountryOffer = {
   checkoutUrl: string;
 };
 
-// EDIT ONLY THIS BLOCK when you create the country-specific checkout links.
+// EDIT ONLY THIS BLOCK when creating or changing country checkout links.
 export const OFFERS: Record<string, CountryOffer> = {
-  BR: { currency: 'BRL', price: 5.90, oldPrice: 17, checkoutUrl: 'https://checkout.escalepay.com/9630961' },
-  US: { currency: 'USD', price: 0, oldPrice: 0, checkoutUrl: 'TODO' }, // TODO: set US price, old price and checkout URL
-  PT: { currency: 'EUR', price: 0, oldPrice: 0, checkoutUrl: 'TODO' }, // TODO: set PT price, old price and checkout URL
-  IT: { currency: 'EUR', price: 0, oldPrice: 0, checkoutUrl: 'TODO' }, // TODO: set IT price, old price and checkout URL
-  ZA: { currency: 'ZAR', price: 0, oldPrice: 0, checkoutUrl: 'TODO' }, // TODO: set ZA price, old price and checkout URL
+  BR: { currency: 'BRL', price: 5.90, oldPrice: 17.00, checkoutUrl: 'https://checkout.escalepay.com/9630961' },
+  US: { currency: 'USD', price: 1.00, oldPrice: 5.00, checkoutUrl: 'https://checkout.escalepay.com/4998831' },
+  ZA: { currency: 'ZAR', price: 17.00, oldPrice: 80.00, checkoutUrl: 'https://checkout.escalepay.com/9787366' },
+  PT: { currency: 'EUR', price: 1.00, oldPrice: 5.00, checkoutUrl: 'https://checkout.escalepay.com/3788940' },
+  IT: { currency: 'EUR', price: 1.00, oldPrice: 5.00, checkoutUrl: 'TODO' }, // TODO: create the Italy checkout link
 };
 
-export function getOffer(country?: string | null): CountryOffer {
+export function resolveOfferCountry(country?: string | null): string {
   const code = (country || 'US').trim().toUpperCase();
-  return OFFERS[code] ?? OFFERS.US;
+  return Object.prototype.hasOwnProperty.call(OFFERS, code) ? code : 'US';
+}
+
+export function getOffer(country?: string | null): CountryOffer {
+  return OFFERS[resolveOfferCountry(country)];
+}
+
+export function getOfferByCheckoutId(checkoutId?: string | number | null): {country: string; offer: CountryOffer} | null {
+  const id = String(checkoutId ?? '').trim();
+  if (!id) return null;
+  for (const [country, offer] of Object.entries(OFFERS)) {
+    if (!isCheckoutConfigured(offer)) continue;
+    try {
+      if (new URL(offer.checkoutUrl).pathname.replace(/\\/+$/, '').split('/').pop() === id) {
+        return {country, offer};
+      }
+    } catch { /* Invalid URLs are treated as unconfigured. */ }
+  }
+  return null;
 }
 
 export function isCheckoutConfigured(offer: CountryOffer): boolean {
@@ -25,6 +43,7 @@ export function isCheckoutConfigured(offer: CountryOffer): boolean {
   catch { return false; }
 }
 
+// Legacy Brazil-only landing page display values.
 export const PRICE = {
   old: new Intl.NumberFormat('pt-BR', {style: 'currency', currency: OFFERS.BR.currency}).format(OFFERS.BR.oldPrice),
   now: new Intl.NumberFormat('pt-BR', {style: 'currency', currency: OFFERS.BR.currency}).format(OFFERS.BR.price),
