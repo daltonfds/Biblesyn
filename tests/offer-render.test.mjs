@@ -70,7 +70,7 @@ test('locale and country cookies survive middleware, auth, preference sync and c
     assert.match(source, /NEXT_COUNTRY/);
   }
   assert.match(middleware, /req\.headers\.get\('x-vercel-ip-country'\)/);
-  assert.match(middleware, /const locale = pathLocale \|\| detectLocale\(req\)/);
+  assert.match(middleware, /manualLocale: req\.cookies\.get\('NEXT_LOCALE'\)/);
   assert.match(callback, /countryCookie = cookieStore\.get\('NEXT_COUNTRY'\)/);
   assert.match(auth, /post\(\{sync: true, locale\}\)/);
   assert.match(prefs, /x-vercel-ip-country/);
