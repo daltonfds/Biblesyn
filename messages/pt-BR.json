@@ -139,7 +139,8 @@
     "subscribe": "Assinar · {price}/mês",
     "create_to_subscribe": "Crie uma conta para assinar",
     "not_now": "Agora não",
-    "secure": "Pagamento seguro com Stripe. Renovação mensal até o cancelamento."
+    "secure": "O pagamento é processado com segurança pela nossa plataforma de checkout.",
+    "discount": "Economize {percent}%"
   },
   "share": {
     "title": "Compartilhar",
