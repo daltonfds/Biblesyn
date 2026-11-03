@@ -9,7 +9,7 @@ export const dynamic = 'force-dynamic';
 function privateJson(body: unknown, status = 200) {
   const response = NextResponse.json(body, {status});
   response.headers.set('Cache-Control', 'private, no-store, max-age=0, must-revalidate');
-  response.headers.set('Vary', 'Cookie, x-vercel-ip-country');
+  response.headers.set('Vary', 'Cookie, Accept-Language, x-vercel-ip-country');
   return response;
 }
 
