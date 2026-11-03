@@ -48,5 +48,6 @@ export function resolveRequestContext(input: {
   const locale = (routing.locales as readonly string[]).includes(manual)
     ? manual
     : (country && COUNTRY_LOCALE[country]) || acceptLanguageLocale(input.acceptLanguage) || 'en';
-  return {country, offerCountry: country || 'US', locale};
+  const offerCountry = country && ['BR', 'PT', 'IT', 'ZA', 'US'].includes(country) ? country : 'US';
+  return {country, offerCountry, locale};
 }
