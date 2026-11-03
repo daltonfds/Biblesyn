@@ -62,7 +62,7 @@ export default function Page({params}: {params: {locale: string}}) {
 
       <section className="band"><div className="w">
         <h2>Hoje, Para o Brasil, <span className="b">Tudo Isso</span> Por Apenas</h2>
-        <div className="price"><s>{PRICE.old}</s><b>{PRICE.now}</b><span>{PRICE.discount}% de desconto</span></div>
+        <div className="price"><s>{oldPrice}</s><b>{price}</b><span>{discount}% de desconto</span></div>
         <ul className="ticks"><li>Sistema Biblesyn completo</li><li>8 materiais espirituais incluídos</li><li>Acesso imediato</li></ul>
         <CheckoutButton disabled={checkoutDisabled}>QUERO COMEÇAR MINHA JORNADA</CheckoutButton>
         <div className="note">Promoção de lançamento · por tempo limitado</div>
