@@ -1,5 +1,4 @@
--- Locale-aware country defaults and Stripe prices.
--- The amounts below reuse the existing EUR/USD/ZAR seed price points; Brazil remains on EscalePay.
+-- Country locale defaults used by middleware and the country-specific external checkout table.
 begin;
 
 insert into public.countries (code, name, default_locale) values
@@ -16,12 +15,5 @@ update public.countries set default_locale='es' where code in ('ES','MX','AR','C
 update public.countries set default_locale='it' where code in ('IT','SM','VA');
 update public.countries set default_locale='en-ZA' where code='ZA';
 update public.countries set default_locale='en' where code in ('US','GB','CA','AU');
-
-insert into public.prices (country, currency, amount_cents, active) values
-  ('US','USD',100,true),('GB','USD',100,true),('CA','USD',100,true),('AU','USD',100,true),
-  ('PT','EUR',100,true),('FR','EUR',100,true),('BE','EUR',100,true),('CH','EUR',100,true),('LU','EUR',100,true),
-  ('ES','EUR',100,true),('IT','EUR',100,true),('SM','EUR',100,true),('VA','EUR',100,true),
-  ('ZA','ZAR',2000,true)
-on conflict (country) do update set currency=excluded.currency, amount_cents=excluded.amount_cents, active=true;
 
 commit;
