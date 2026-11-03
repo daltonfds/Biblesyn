@@ -2,7 +2,7 @@ import {NextResponse} from 'next/server';
 import {supabaseServer} from '@/lib/supabase/server';
 import {getCountry, getCountryCookie, getLocale} from '@/lib/locale';
 import {routing} from '@/i18n/routing';
-import {getOffer, isCheckoutConfigured, resolveOfferCountry} from '@/lib/offer';
+import {buildOfferCheckoutUrl, getOffer, isCheckoutConfigured, resolveOfferCountry} from '@/lib/offer';
 
 export async function POST(request: Request) {
   const body = await request.json().catch(() => ({}));
@@ -18,14 +18,8 @@ export async function POST(request: Request) {
     return NextResponse.json({error: 'checkout_not_configured', country}, {status: 503});
   }
 
-  // These are attribution hints only. The provider must preserve them in its signed webhook
-  // for automatic account matching; never activate Premium from a browser redirect.
-  const url = new URL(offer.checkoutUrl);
-  url.searchParams.set('user_id', user.id);
+  // Attribution values are attached to the selected offer and retained by EscalePay.
   const customerEmail = user.email || profile?.email;
-  if (customerEmail) url.searchParams.set('email', customerEmail);
-  url.searchParams.set('locale', locale);
-  url.searchParams.set('country', country);
-  url.searchParams.set('external_reference', 'biblesyn_' + user.id);
-  return NextResponse.json({url: url.toString()});
+  const url = buildOfferCheckoutUrl(locale, country, user.id, customerEmail);
+  return NextResponse.json({url});
 }
