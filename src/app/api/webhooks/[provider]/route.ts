@@ -63,7 +63,7 @@ export async function POST(request: NextRequest, context: {params: {provider: st
   const event = str(request.headers.get('x-escalepay-event'), body.event_type, body.event, body.type, data.event_type);
   const status = str(data.status, body.status, body.payment_status, event);
   const action = eventAction(event, status);
-  const orderId = str(data.order_id, data.orderId, data.transaction_id, data.payment_id, data.id, body.order_id, body.orderId);
+  const orderId = str(data.transaction_id, data.payment_id, data.order_id, data.orderId, data.id, body.transaction_id, body.payment_id, body.order_id, body.orderId);
   const email = str(buyer.email, data.customer_email, data.email, body.customer_email, body.email).toLowerCase();
   const externalReference = str(data.external_reference, data.externalReference, body.external_reference);
   // Resolve the paid offer from the EscalePay checkout/product ID, never from visitor IP.
@@ -128,7 +128,12 @@ export async function POST(request: NextRequest, context: {params: {provider: st
       if (priorPayment?.refunded || ['refunded','canceled','chargeback'].includes(priorPayment?.status ?? '')) {
         await db.from('payment_webhook_events').update({processing_status: 'ignored', user_id: profile.id})
           .eq('provider', provider).eq('provider_event_id', eventId);
-        return NextResponse.json({ok: true, processed: false, reason: 'order_already_refunded'});
+        return NextResponse.json({ok: true, processed: false, reason: 'order_already_revoked'});
+      }
+      if (priorPayment?.status === 'paid') {
+        await db.from('payment_webhook_events').update({processing_status: 'processed', user_id: profile.id})
+          .eq('provider', provider).eq('provider_event_id', eventId);
+        return NextResponse.json({ok: true, processed: true, duplicatePayment: true});
       }
       const now = new Date();
       const {error: ledgerError} = await db.from('payment_transactions').upsert({
@@ -137,11 +142,6 @@ export async function POST(request: NextRequest, context: {params: {provider: st
         amount_cents: amountCents, status: 'paid', refunded: false, paid_at: now.toISOString(), updated_at: now.toISOString(),
       }, {onConflict: 'provider,provider_order_id'});
       if (ledgerError) throw new Error('payment_ledger_write_failed');
-      if (profile.premium_order_id === orderId && profile.is_premium) {
-        await db.from('payment_webhook_events').update({processing_status: 'processed', user_id: profile.id})
-          .eq('provider', provider).eq('provider_event_id', eventId);
-        return NextResponse.json({ok: true, processed: true, duplicateOrder: true});
-      }
       const previousEnd = profile.premium_expires_at ? new Date(profile.premium_expires_at) : now;
       const base = previousEnd > now ? previousEnd : now;
       const expiry = new Date(base.getTime() + 30 * 24 * 60 * 60 * 1000);
