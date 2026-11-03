@@ -25,7 +25,7 @@ begin
 end $$;
 revoke execute on function public.handle_new_user() from public, anon, authenticated;
 create or replace function public.is_premium() returns boolean language sql stable security definer set search_path = public as $$
-  select coalesce((select is_premium and not suspended and (premium_expires_at is null or premium_expires_at > now()) from public.profiles where id = auth.uid()), false) $$;
+  select coalesce((select is_premium and not suspended from public.profiles where id = auth.uid()), false) $$;
 revoke update on public.profiles from anon, authenticated;
 grant update (display_name, country, locale, font_family, font_size) on public.profiles to authenticated;
 
