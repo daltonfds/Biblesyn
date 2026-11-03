@@ -74,13 +74,13 @@ export default function Page({params}: {params: {locale: string}}) {
         <Acc items={TEASERS} />
         <h2 style={{ marginTop: 44 }}>Perguntas frequentes</h2>
         <Acc items={FAQ} />
-        <CheckoutButton disabled={checkoutDisabled} className="btn dark">QUERO ACESSO POR {PRICE.now.toUpperCase()}</CheckoutButton>
+        <CheckoutButton disabled={checkoutDisabled} className="btn dark">QUERO ACESSO POR {price.toUpperCase()}</CheckoutButton>
       </div></section>
 
       <footer>© Biblesyn · Entenda a Palavra. Fortaleça o seu espírito.</footer>
 
       <div className="sticky">
-        <span><s>{PRICE.old}</s> <b>{PRICE.now}</b><br />{PRICE.discount}% de desconto · Acesso imediato</span>
+        <span><s>{oldPrice}</s> <b>{price}</b><br />{discount}% de desconto · Acesso imediato</span>
         <CheckoutButton disabled={checkoutDisabled}>QUERO AGORA</CheckoutButton>
       </div>
     </main>
