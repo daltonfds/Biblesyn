@@ -7,7 +7,7 @@ import ts from 'typescript';
 const source = fs.readFileSync(new URL('../src/lib/offer.ts', import.meta.url), 'utf8');
 const js = ts.transpileModule(source, {compilerOptions: {module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2020}}).outputText;
 const module = {exports: {}};
-vm.runInNewContext(js, {module, exports: module.exports});
+vm.runInNewContext(js, {module, exports: module.exports, URL});
 const {getOffer, isCheckoutConfigured, OFFERS} = module.exports;
 
 for (const country of ['US','PT','IT','ZA','BR']) {
