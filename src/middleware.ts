@@ -39,7 +39,7 @@ function acceptLanguageLocale(header: string | null): string | null {
 function detectLocale(req: NextRequest): string {
   const manual = req.cookies.get('NEXT_LOCALE')?.value;
   if (manual && SUPPORTED.has(manual)) return manual;
-  const country = (req.headers.get('x-vercel-ip-country') || '').toUpperCase();
+  const country = (req.cookies.get('NEXT_COUNTRY')?.value || req.cookies.get('country')?.value || process.env.NEXT_COUNTRY || req.headers.get('x-vercel-ip-country') || '').toUpperCase();
   return COUNTRY_LOCALE[country] || acceptLanguageLocale(req.headers.get('accept-language')) || 'en';
 }
 
@@ -61,8 +61,9 @@ export async function middleware(req: NextRequest) {
   const intlResponse = handleI18nRouting(req);
   const cookieOptions = {path: '/', maxAge: 31536000, sameSite: 'lax' as const};
   intlResponse.cookies.set('NEXT_LOCALE', locale, cookieOptions);
-  const detectedCountry = req.headers.get('x-vercel-ip-country')?.toUpperCase();
-  if (detectedCountry && !req.cookies.get('country')) {
+  const detectedCountry = (req.cookies.get('NEXT_COUNTRY')?.value || req.cookies.get('country')?.value || process.env.NEXT_COUNTRY || req.headers.get('x-vercel-ip-country') || '').toUpperCase();
+  if (/^[A-Z]{2}$/.test(detectedCountry)) {
+    intlResponse.cookies.set('NEXT_COUNTRY', detectedCountry, cookieOptions);
     intlResponse.cookies.set('country', detectedCountry, cookieOptions);
   }
 
