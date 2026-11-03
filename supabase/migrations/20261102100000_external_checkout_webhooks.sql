@@ -1,7 +1,7 @@
 begin;
 
--- Remove Stripe-only schema and fields. Checkout providers are external and provider-neutral.
 alter table public.profiles drop constraint if exists profiles_premium_source_check;
+update public.profiles set is_premium = false, premium_source = null where premium_source = 'stripe';
 alter table public.profiles drop column if exists stripe_customer_id;
 alter table public.profiles add column if not exists premium_expires_at timestamptz;
 alter table public.profiles add column if not exists premium_country text;
@@ -31,7 +31,6 @@ create table if not exists public.payment_webhook_events (
   unique (provider, provider_event_id),
   unique (provider, event_hash)
 );
-
 create index if not exists payment_webhook_events_order_idx on public.payment_webhook_events(provider, order_id);
 create index if not exists payment_webhook_events_created_idx on public.payment_webhook_events(created_at desc);
 alter table public.payment_webhook_events enable row level security;
