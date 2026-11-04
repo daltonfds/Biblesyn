@@ -1,0 +1,19 @@
+{
+  "expo": {
+    "name": "Biblesyn",
+    "slug": "biblesyn",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "scheme": "biblesyn",
+    "newArchEnabled": true,
+    "android": {
+      "package": "online.blui.biblesyn",
+      "versionCode": 1,
+      "permissions": [
+        "INTERNET",
+        "VIBRATE"
+      ]
+    }
+  }
+}
